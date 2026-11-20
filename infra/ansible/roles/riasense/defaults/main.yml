@@ -1,0 +1,22 @@
+# Commit, branch ou tag a instalar. O código sai do clone do controlador (`git archive`):
+# a VM não precisa de credenciais do GitLab nem de rede para o repositório.
+riasense_ref: HEAD
+# Raiz do repositório no controlador (o site.yml está em infra/ansible/)
+riasense_repo_local: "{{ playbook_dir }}/../.."
+riasense_dir: /opt/riasense
+
+# build: constrói as imagens na VM (precisa de rede para o npm e o pip).
+# imagens: carrega imagens feitas no controlador (`docker save`), para a VM do IT sem rede.
+riasense_modo: build
+riasense_imagens_tar: "{{ playbook_dir }}/imagens/riasense-imagens.tar.gz"
+
+riasense_instalar_docker: true
+riasense_web_porta: 80
+riasense_api_porta: 8000
+# Token do Cloudflare Tunnel (Zero Trust). Se vazio, o serviço de túnel não é ativado.
+riasense_cloudflare_tunnel_token: "{{ lookup('env', 'CLOUDFLARE_TOKEN_API') | default(lookup('env', 'CLOUDFLARE_TUNNEL_TOKEN'), true) | default(lookup('env', 'TUNNEL_TOKEN'), true) | default('', true) }}"
+# Esperas do teste final (a 1.ª construção demora alguns minutos)
+riasense_espera_tentativas: 40
+riasense_espera_segundos: 6
+# ADR-0028, ponto 6: o «Agora» liga-se só na VM do Proxmox (passa-se -e riasense_agora_ativo=true ao Ansible).
+riasense_agora_ativo: false

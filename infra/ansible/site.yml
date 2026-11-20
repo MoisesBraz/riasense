@@ -1,0 +1,8 @@
+# Instala ou atualiza a RiaSense num alvo (ADR-0028). Idempotente: correr outra vez atualiza.
+#   ansible-playbook site.yml -l proxmox
+#   ansible-playbook site.yml -l proxmox -e riasense_ref=<commit|branch|tag>
+- name: RiaSense (API + web, sem base de dados)
+  hosts: all
+  become: true
+  roles:
+    - riasense

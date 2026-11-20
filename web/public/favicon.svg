@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 626 626">
+  <!-- A marca da RiaSense: o «R» azul feito de ruas (#97), desenhada a partir do PNG da página «Logotipo» do Figma. A mesma geometria está em BarraSuperior.tsx, com as cores dos tokens accent-fill e text-on-accent (tokens.css). -->
+  <rect width="626" height="626" rx="41" fill="#2b5bff"/>
+  <g fill="#fff">
+    <rect x="119.2" width="61.1" height="626"/>
+    <polygon points="168.8,313 254.4,313 567.9,626 482.3,626"/>
+  </g>
+  <path d="M0 313H418.7A93.9 93.75 0 0 0 418.7 125.5H180.3" fill="none" stroke="#fff" stroke-width="61.5"/>
+</svg>

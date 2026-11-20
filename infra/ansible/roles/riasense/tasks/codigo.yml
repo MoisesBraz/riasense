@@ -1,0 +1,62 @@
+# O código vai do controlador para a VM como arquivo do commit pedido: sem credenciais do GitLab na VM.
+# O módulo git não faz rev-parse nem archive: por isso estas duas tarefas usam o comando.
+- name: Commit a instalar (no controlador)
+  ansible.builtin.command: git -C "{{ riasense_repo_local }}" rev-parse --short "{{ riasense_ref }}"  # noqa: command-instead-of-module
+  delegate_to: localhost
+  become: false
+  run_once: true
+  changed_when: false
+  register: riasense_commit
+
+- name: Arquivo do commit (no controlador)  # noqa: command-instead-of-module
+  ansible.builtin.command: >-
+    git -C "{{ riasense_repo_local }}" archive --format=tar.gz
+    -o "/tmp/riasense-{{ riasense_commit.stdout }}.tar.gz" "{{ riasense_ref }}"
+  args:
+    creates: "/tmp/riasense-{{ riasense_commit.stdout }}.tar.gz"
+  delegate_to: localhost
+  become: false
+  run_once: true
+
+- name: Pasta da RiaSense
+  ansible.builtin.file:
+    path: "{{ riasense_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Commit instalado agora
+  ansible.builtin.slurp:
+    src: "{{ riasense_dir }}/.commit"
+  register: riasense_instalado
+  failed_when: false
+
+- name: Código do commit (só se mudou)
+  ansible.builtin.unarchive:
+    src: "/tmp/riasense-{{ riasense_commit.stdout }}.tar.gz"
+    dest: "{{ riasense_dir }}"
+  when: (riasense_instalado.content | default('') | b64decode | trim) != riasense_commit.stdout
+
+# ADR-0028, ponto 6: na VM, o «Agora» fica ligado. O config versionado tem-no desligado, e o código extraído repõe-no
+# em cada deploy, por isso volta a ligar-se aqui. O compose monta o config só de leitura no contentor da API.
+- name: O «Agora» ligado na VM
+  ansible.builtin.replace:
+    path: "{{ riasense_dir }}/config/riasense.yaml"
+    regexp: '^(agora:.*\n  ativo: )false'
+    replace: '\1true'
+  when: riasense_agora_ativo | bool
+  register: riasense_agora_mudou
+
+- name: Marca do commit instalado
+  ansible.builtin.copy:
+    content: "{{ riasense_commit.stdout }}\n"
+    dest: "{{ riasense_dir }}/.commit"
+    mode: "0644"
+
+- name: Configuração do compose
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ riasense_dir }}/.env"
+    # Só o root lê: o .env pode ter o token do túnel (o compose corre como root, via become).
+    mode: "0600"
+  # Sem o token no log, mesmo com --diff ou -v.
+  no_log: true

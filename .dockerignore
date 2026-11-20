@@ -1,0 +1,8 @@
+.git
+.venv
+**/node_modules
+**/dist
+data/raw
+pipeline/viabilidade
+entregaveis
+.env

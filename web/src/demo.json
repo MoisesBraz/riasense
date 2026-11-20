@@ -1,0 +1,38 @@
+{
+  "zona": {
+    "id": "av-25-de-abril-oita",
+    "nome": "Av. 25 de Abril / Av. de Oita",
+    "rsu": "RoadSideUnit:0030",
+    "passadeiras": [
+      "SmartCrosswalk:0019",
+      "SmartCrosswalk:0020",
+      "SmartCrosswalk:0021",
+      "SmartCrosswalk:0022"
+    ],
+    "foco": "SmartCrosswalk:0020"
+  },
+  "incidente_inicio": "2026-11-04T20:06",
+  "verificar_desde": "2026-11-07T00:00",
+  "periodo": { "inicio": "2026-11-03T15:00", "fim": "2026-11-10T11:00" },
+  "proteger": { "por_travessias": 10, "intervalo_min": 15 },
+  "prever": { "horizonte_h": 3 },
+  "mapa": {
+    "tiles": "tiles/aveiro.pmtiles",
+    "glifos": "fonts/{fontstack}/{range}.pbf",
+    "centro": [-8.6467, 40.6360],
+    "zoom": 17.6,
+    "cobertura_m": 40,
+    "edificio_altura_m": 9,
+    "sinais_h7": ["SmartCrosswalk:0019", "SmartCrosswalk:0022"],
+    "semaforos_ponta_oposta": ["SmartCrosswalk:0021"]
+  },
+  "carros": { "veiculos_por_ponto": 20, "pontos_max": 600, "aceleracao": 3 },
+  "pessoas": { "travessias_por_figura": 10, "figuras_max": 12, "aceleracao": 2, "aspeto": "neutro" },
+  "voz": {
+    "ruas": [
+      { "nome": "Av. 25 de Abril", "sentidos": [[10084], [11168]] },
+      { "nome": "Av. de Oita", "sentidos": [[10368, 11146, 11152], [10366, 11153, 11169]] },
+      { "nome": "Av. da Universidade", "sentidos": [[10415, 10419, 11285, 11328, 11361, 11362], [10871]] }
+    ]
+  }
+}

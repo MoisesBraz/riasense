@@ -1,0 +1,38 @@
+# A coerência temporal do risco potencial com a ANEPC usa só o arquivo de 2016 a 2020, por hora do dia, com os critérios fixados antes do código
+
+Status: proposto (18/11/2026). Restringe o ADR-0017 (a fonte passa a ser só o arquivo de 2016 a 2020; o fogos.pt fica fora) e fixa a regra da #54. Não muda nenhum número do produto: só acrescenta um Parquet.
+
+## Contexto
+
+- No checkpoint de 18/11 os mentores responderam à pergunta 7 da #19 (nota 13374): podemos usar o arquivo público da ANEPC de 2016 a 2020 **como teste de coerência**, **desde que o relatório final o declare**. A resposta cobre esse arquivo e mais nada. O ADR-0017 tinha como fonte principal o fogos.pt (2021 a 2026), que **não foi autorizado**; o art. 22.º, n.º 2 pede dados originais ou com autorização expressa, por isso o fogos.pt sai.
+- O arquivo é o repositório [centraldedados/protecao_civil](https://github.com/centraldedados/protecao_civil): 5 CSV (2016 a 05/07/2020, 910 782 ocorrências), raspados do prociv.pt. **Licença:** a fonte (prociv.pt) não declara nenhuma. O repositório não tem ficheiro de licença; o `datapackage.json` diz PDDL-1.0, mas só lista 2016 a 2019 e a licença de um repositório não substitui a da fonte. Trata-se como «sem licença declarada», usado com a autorização dos mentores e com a declaração no relatório.
+- A exploração do João (#54, 17/11) já mostrou uns primeiros números (Pearson de 0,55 e 0,63 e Spearman de 0,67 e 0,76, no concelho e no distrito). **O limiar de 0,5 do ponto 5.1 fixa-se já conhecendo esses números**: é uma regra de leitura, e não um teste às cegas. Fixa-se a regra **antes de correr o código no `main`**, como nos ADR-0027, 0031 e 0035, para que o resultado não a ajuste, e o que fica por medir, sem IC na exploração, é a diferença risco − exposição (ponto 5.3), com o bootstrap e a exposição tal como entra no risco (`exposicao_pct`).
+- O risco potencial é o do `risco_potencial.parquet` (24 passadeiras, 164 horas, de 03/11 às 15h a 10/11 às 11h). Continua a não medir acidentes (ADR-0007).
+
+## Decisão
+
+1. **A fonte.** Só os 5 CSV de `centraldedados/protecao_civil`, fixados ao commit `573eb05` (10/12/2022), cada um com o seu SHA-256 no `config/riasense.yaml`. Os CSV ficam **fora do git**, numa pasta dada por variável de ambiente (como os do Living Lab), e o script descarrega-os com a soma verificada. Só o resultado agregado se versiona.
+2. **O que se conta.** As ocorrências com `Natureza` = «Riscos Tecnológicos / Acidentes / Atropelamento rodoviário» (o ferroviário fica fora), com os duplicados de `Numero` removidos. Três âmbitos: **concelho de Aveiro** (`Distrito` e `Concelho` = AVEIRO: 91 atropelamentos), **distrito de Aveiro** (700) e **Portugal** (10 329, só como referência). A hora é a de `DataOcorrencia`, tomada como hora local. Os ficheiros têm dois formatos de data (dd/mm/aaaa nos de 2016 a 2018 e, em geral, ISO nos de 2019 e 2020; 6 dos 904 atropelamentos de 2020 também vêm em dd/mm/aaaa): lêem-se os dois, e as linhas de data ilegível descartam-se e contam-se. Nos 700 do distrito todas as datas se leem.
+3. **Só validação temporal, por hora do dia.** O perfil é a contagem de atropelamentos em cada uma das 24 horas do dia. Compara-se com o perfil horário do risco potencial (a média, por hora do dia, de `risco_potencial` nas 24 passadeiras e nas horas da semana de dados) e com o da **exposição sozinha** (a média de `exposicao_pct`, a componente do risco que vem dos peões). **Nunca por passadeira** (as coordenadas são o centroide da freguesia: 751 acidentes caem em 95 pontos), **nunca como entrada do risco nem dos modelos**, **nunca como validação**.
+4. **A medida.** Pearson e Spearman entre as 24 contagens e cada perfil, nos 3 âmbitos. O **IC de 95 %** vem de um bootstrap dos atropelamentos (2000 reamostragens com reposição, semente 42, percentis 2,5 e 97,5), e a **diferença** entre o risco e a exposição (por correlação) leva o IC das mesmas reamostragens. **Reporta-se sempre**, nos 3 âmbitos.
+5. **O critério de leitura, fixado antes.**
+   1. **«Coerente»:** no distrito (o âmbito com mais ocorrências), o Spearman do risco é **≥ 0,5** e o limite inferior do IC é **> 0**. Só então o texto diz «as horas de maior risco potencial acompanham as horas dos atropelamentos (Spearman X no distrito de Aveiro, 700 atropelamentos de 2016 a 2020)». Se não, diz «sem coerência demonstrada» e a frase não aparece.
+   2. **O concelho (91) mostra-se sempre, com o IC**, mas não sustenta a frase: são poucas ocorrências, e o IC é largo.
+   3. **«O risco acrescenta à exposição»** só se diz se o IC da diferença dos Spearman no distrito ficar **todo acima de 0**. Se não, diz-se que **o risco potencial não acompanha os atropelamentos melhor do que a exposição sozinha**, e **não** se diz que o comportamento ou a previsão acrescentam alguma coisa. A diferença sai sempre.
+   4. Nunca «validado», nunca «mede acidentes», nunca por passadeira.
+6. **A saída.** Um Parquet novo, `data/processed/validacao_anepc.parquet` (o perfil horário e as correlações com o IC). **Sem web, sem mudar nenhum Parquet nem número existentes.** O texto do relatório, do sumário e do PPT só usa o que este Parquet disser, pela regra do ponto 5.
+7. **O aviso, em tudo:** «Dados recolhidos de fontes abertas, usados só para contexto e coerência. Carecem de validação junto das entidades responsáveis» (aqui, a ANEPC), no texto, no pitch e na legenda.
+8. **Ressalva a dizer sempre:**
+   - as épocas diferem: os atropelamentos são de 2016 a 05/07/2020 (todas as estações) e o risco é de uma semana de novembro de 2026; em novembro o pico das 18h também tem a ver com o escuro;
+   - quase tudo segue a atividade da cidade ao longo do dia, por isso uma boa correlação por hora **não mostra** que o risco potencial identifica os sítios perigosos;
+   - são 24 pontos vizinhos e correlacionados, e o IC só mede a incerteza das contagens, não a de um perfil de risco que vem de **uma semana**;
+   - a hora do ficheiro assume-se local; as coordenadas são centroides, por isso não há validação espacial; os dados acabam a 05/07/2020 e não têm licença declarada.
+9. **Prazo (PO):** o código **até 19/11 às 18h**. **Até o MR do código da #54 entrar no `main`, o sumário e o PPT dizem «ANEPC, arquivo público de 2016 a 2020: consultada, não usada»** (#117, !119), que é o que o `main` tem. Esse MR troca a linha por «usada, só como teste de coerência temporal», com o aviso e o que o ponto 5 permitir, no mesmo commit do código. Se o prazo escorregar, a #54 vai para o roadmap e não há nada a mudar.
+
+## Consequências
+
+- **O ADR-0017 fica emendado neste MR:** a fonte é só o arquivo de 2016 a 2020; o fogos.pt, os seus números (a tabela, o contraexemplo da SC0004, o «Spearman cerca de 0,77 a 0,80 em 2026») e a frase «os atropelamentos de 2026» saem do que se diz. A regra do que se diz é a do ponto 5 deste ADR. O aviso e o ADR-0007 mantêm-se.
+- **O ADR-0018 fica emendado neste MR:** o fator de cerca de 2 vezes de atropelamentos no escuro vem do fogos.pt e por isso cai, como o próprio ADR dizia («sem a autorização, fica só o contexto "às escuras"»). Nenhum entregável usa esse fator.
+- **O texto do sumário e do PPT declara a fonte** (#117, !119): até o MR do código da #54 entrar, a linha da ANEPC diz «consultada, não usada»; esse MR troca-a por «usada, só como teste de coerência temporal», com o aviso.
+- **Risco:** se o resultado não for «coerente», diz-se («sem coerência demonstrada») e não se retoca a regra, nem o perfil, nem o âmbito. Com 24 pontos e uma semana de risco, é um resultado que se aceita, não um defeito que se esconde.
+- Implementação: #54, num MR de código depois deste ADR estar no `main`.

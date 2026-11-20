@@ -1,0 +1,72 @@
+# RASCUNHO (decisão de 16/11/2026, wiki «Decisões» Q10 e Q17).
+# 7 zonas da matriz. A componente «peões» vem das visitas às TouristZones
+# ou, nas 2 zonas extra, das travessias nas SmartCrosswalks; cada fonte é
+# normalizada em percentis à parte. Segmentos viários, passadeiras e lugares
+# de estacionamento são atribuídos às zonas por proximidade (ST_DWithin em
+# EPSG:3763) na issue de atribuição espacial; os RSU servem de verificação.
+#
+# Para replicar noutra zona ou cidade: trocar esta lista, sem mexer no código.
+
+cidade: Aveiro
+fuso_horario: Europe/Lisbon      # em novembro, UTC+0 (hora UTC = hora local)
+periodo_dados: {inicio: "2026-11-03", fim: "2026-11-10"}
+raio_atribuicao_m: 300           # a confirmar na M1
+
+zonas:
+  - id: peixinho
+    nome: Av. Dr. Lourenço Peixinho
+    fonte_peoes: visitas
+    tourist_zones: [TouristZone:0004, TouristZone:0006, TouristZone:0007, TouristZone:0008]
+    rsu: [RoadSideUnit:0006]
+    demo: true                     # história da demo
+
+  - id: rossio
+    nome: Rossio
+    fonte_peoes: visitas
+    tourist_zones: [TouristZone:0001, TouristZone:0005]
+    rsu: [RoadSideUnit:0003, RoadSideUnit:0004]
+
+  - id: forum-moliceiros
+    nome: Fórum / Saída de Moliceiros
+    fonte_peoes: visitas
+    tourist_zones: [TouristZone:0002, TouristZone:0003]
+    rsu: [RoadSideUnit:0006]
+
+  - id: estacao
+    nome: Estação de Comboios
+    fonte_peoes: visitas
+    tourist_zones: [TouristZone:0011]
+    rsu: [RoadSideUnit:0038]
+
+  - id: ria-fonte-nova
+    nome: Ria de Aveiro / Cais da Fonte Nova
+    fonte_peoes: visitas
+    tourist_zones: [TouristZone:0009, TouristZone:0010]
+    rsu: [RoadSideUnit:0022]
+
+  # Zonas extra: peões = travessias nas passadeiras.
+  - id: universidade-santiago
+    nome: Universidade / Rua de Santiago
+    fonte_peoes: travessias
+    smart_crosswalks: [SmartCrosswalk:0001, SmartCrosswalk:0002, SmartCrosswalk:0003, SmartCrosswalk:0004]
+    rsu: [RoadSideUnit:0035]
+
+  - id: araujo-e-silva
+    nome: Av. Araújo e Silva / Av. Artur Ravara
+    fonte_peoes: travessias
+    smart_crosswalks: [SmartCrosswalk:0011, SmartCrosswalk:0012, SmartCrosswalk:0013]
+    rsu: [RoadSideUnit:0025]
+
+# Se uma zona extra não tiver pesados (C+D) nos seus segmentos, troca pela
+# seguinte desta lista (decisão Q17).
+zonas_reserva:
+  - id: av-25-de-abril
+    nome: Av. 25 de Abril / Av. de Oita
+    fonte_peoes: travessias
+    smart_crosswalks: [SmartCrosswalk:0019, SmartCrosswalk:0020, SmartCrosswalk:0021, SmartCrosswalk:0022, SmartCrosswalk:0023, SmartCrosswalk:0024]
+    rsu: [RoadSideUnit:0028, RoadSideUnit:0030]
+  - id: mario-sacramento
+    nome: Rua Dr. Mário Sacramento / Rua Ciudad Rodrigo
+    fonte_peoes: travessias
+    smart_crosswalks: [SmartCrosswalk:0007, SmartCrosswalk:0008, SmartCrosswalk:0009, SmartCrosswalk:0010]
+    rsu: [RoadSideUnit:0033]

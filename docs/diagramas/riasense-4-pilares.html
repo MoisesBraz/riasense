@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RiaSense: os 4 pilares</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Tokens da app RiaSense, tema claro (web/src/styles/tokens.css). */
+    :root {
+      --color-paper:  #eeeff2;
+      --color-ink:    #121417;
+      --color-muted:  #4e5054;
+      --color-accent: #0037f2;
+      --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, Menlo, Consolas, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 1rem;
+    }
+    .frame { max-width: 1280px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-sans); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2.25rem);
+      font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 1280px; display: block; }
+    @media print { .diagram-container { overflow-x: visible; } svg { min-width: 0; } }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Arquitetura · 4 pilares sobre o Living Lab de Aveiro</p>
+    <h1>RiaSense: uma rede que se vigia, se completa, prevê e protege</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="riasense-4-pilares-title riasense-4-pilares-desc">
+        <title id="riasense-4-pilares-title">RiaSense: os 4 pilares</title>
+        <desc id="riasense-4-pilares-desc">Os dados do Living Lab de Aveiro alimentam quatro pilares (vigiar falhas, completar sensores em falta, prever as próximas horas e medir se os carros abrandam junto às passadeiras), que entregam alertas e sensores virtuais ao ATCLL Vision do IT e o mapa de risco potencial à Câmara.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4e5054"/></marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0037f2"/></marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#146a38"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#eeeff2"/>
+
+        <!-- ============ ARROWS (behind nodes) ============ -->
+        <!-- Living Lab → each pillar (straight, shared x) -->
+        <line x1="190" y1="104" x2="190" y2="158" stroke="#4e5054" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="490" y1="104" x2="490" y2="158" stroke="#4e5054" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="790" y1="104" x2="790" y2="158" stroke="#4e5054" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="1090" y1="104" x2="1090" y2="158" stroke="#4e5054" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- ① → ② : as falhas dizem o que completar -->
+        <line x1="310" y1="260" x2="368" y2="260" stroke="#0037f2" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+        <rect x="314" y="232" width="52" height="16" rx="2" fill="#eeeff2"/>
+        <text x="340" y="244" fill="#4e5054" font-size="12" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">FALHAS</text>
+
+        <!-- ① → ATCLL Vision -->
+        <line x1="190" y1="360" x2="190" y2="470" stroke="#0037f2" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+        <rect x="200" y="396" width="56" height="16" rx="2" fill="#eeeff2"/>
+        <text x="228" y="408" fill="#4e5054" font-size="12" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">ALERTAS</text>
+
+        <!-- ② → ATCLL Vision -->
+        <line x1="450" y1="360" x2="450" y2="470" stroke="#4e5054" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="334" y="396" width="106" height="16" rx="2" fill="#eeeff2"/>
+        <text x="387" y="408" fill="#4e5054" font-size="12" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">SENSOR VIRTUAL</text>
+
+        <!-- ② → Mapa (exposição) : elbow r=8 -->
+        <path d="M 530,360 V 408 Q 530,416 538,416 H 702 Q 710,416 710,424 V 470" fill="none" stroke="#4e5054" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="574" y="392" width="88" height="16" rx="2" fill="#eeeff2"/>
+        <text x="618" y="404" fill="#4e5054" font-size="12" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">ESTIMATIVAS</text>
+
+        <!-- ③ → Mapa (previsão) -->
+        <line x1="790" y1="360" x2="790" y2="470" stroke="#4e5054" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="800" y="396" width="68" height="16" rx="2" fill="#eeeff2"/>
+        <text x="834" y="408" fill="#4e5054" font-size="12" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">PREVISÃO</text>
+
+        <!-- ④ → Mapa (comportamento) -->
+        <line x1="1090" y1="360" x2="1090" y2="470" stroke="#4e5054" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="1100" y="396" width="104" height="16" rx="2" fill="#eeeff2"/>
+        <text x="1152" y="408" fill="#4e5054" font-size="12" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">COMPORTAMENTO</text>
+
+        <!-- ============ NODES ============ -->
+        <!-- Living Lab (input band) -->
+        <rect x="70" y="40" width="1140" height="64" rx="6" fill="#eeeff2"/>
+        <rect x="70" y="40" width="1140" height="64" rx="6" fill="rgba(18,20,23,0.04)" stroke="#121417" stroke-width="1"/>
+        <rect x="82" y="50" width="44" height="14" rx="2" fill="transparent" stroke="rgba(18,20,23,0.40)" stroke-width="0.8"/>
+        <text x="104" y="60" fill="rgba(18,20,23,0.80)" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">DADOS</text>
+        <text x="140" y="72" fill="#121417" font-size="16" font-weight="600" font-family="Inter, system-ui, sans-serif">Living Lab de Aveiro (ATCLL)</text>
+        <text x="140" y="92" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">passadeiras · segmentos de estrada · estacionamento · zonas turísticas, ligados por RSU</text>
+
+        <!-- ① Vigiar (focal) -->
+        <rect x="70" y="160" width="240" height="200" rx="6" fill="#eeeff2"/>
+        <rect x="70" y="160" width="240" height="200" rx="6" fill="rgba(43,91,255,0.08)" stroke="#0037f2" stroke-width="1.4"/>
+        <rect x="82" y="172" width="28" height="14" rx="2" fill="transparent" stroke="rgba(0,55,242,0.50)" stroke-width="0.8"/>
+        <text x="96" y="182" fill="#0037f2" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">IT</text>
+        <text x="86" y="214" fill="#121417" font-size="16" font-weight="600" font-family="Inter, system-ui, sans-serif">① Vigiar</text>
+        <text x="86" y="244" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">Que sensor deixou de ver,</text>
+        <text x="86" y="260" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">e foi a rede ou o aparelho?</text>
+        <text x="86" y="300" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">Silêncios inesperados,</text>
+        <text x="86" y="316" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">agrupados por RSU</text>
+
+        <!-- ② Completar -->
+        <rect x="370" y="160" width="240" height="200" rx="6" fill="#eeeff2"/>
+        <rect x="370" y="160" width="240" height="200" rx="6" fill="#eeeff2" stroke="#121417" stroke-width="1"/>
+        <rect x="382" y="172" width="28" height="14" rx="2" fill="transparent" stroke="rgba(18,20,23,0.40)" stroke-width="0.8"/>
+        <text x="396" y="182" fill="rgba(18,20,23,0.80)" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">IT</text>
+        <text x="386" y="214" fill="#121417" font-size="16" font-weight="600" font-family="Inter, system-ui, sans-serif">② Completar</text>
+        <text x="386" y="244" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">Quanto mediria o sensor</text>
+        <text x="386" y="260" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">que está sem comunicação?</text>
+        <text x="386" y="300" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">Sensor virtual: perfil próprio</text>
+        <text x="386" y="316" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">× variação dos 5 vizinhos</text>
+
+        <!-- ③ Prever -->
+        <rect x="670" y="160" width="240" height="200" rx="6" fill="#eeeff2"/>
+        <rect x="670" y="160" width="240" height="200" rx="6" fill="#eeeff2" stroke="#121417" stroke-width="1"/>
+        <rect x="682" y="172" width="52" height="14" rx="2" fill="transparent" stroke="rgba(18,20,23,0.40)" stroke-width="0.8"/>
+        <text x="708" y="182" fill="rgba(18,20,23,0.80)" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">CÂMARA</text>
+        <text x="686" y="214" fill="#121417" font-size="16" font-weight="600" font-family="Inter, system-ui, sans-serif">③ Prever</text>
+        <text x="686" y="244" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">O que vem daqui a 3 horas?</text>
+        <text x="686" y="300" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">LightGBM a 3 h, só onde erra</text>
+        <text x="686" y="316" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">menos do que repetir ontem</text>
+        <text x="686" y="332" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">ou a última hora</text>
+
+        <!-- ④ Proteger -->
+        <rect x="970" y="160" width="240" height="200" rx="6" fill="#eeeff2"/>
+        <rect x="970" y="160" width="240" height="200" rx="6" fill="#eeeff2" stroke="#121417" stroke-width="1"/>
+        <rect x="982" y="172" width="52" height="14" rx="2" fill="transparent" stroke="rgba(18,20,23,0.40)" stroke-width="0.8"/>
+        <text x="1008" y="182" fill="rgba(18,20,23,0.80)" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">CÂMARA</text>
+        <text x="986" y="214" fill="#121417" font-size="16" font-weight="600" font-family="Inter, system-ui, sans-serif">④ Proteger</text>
+        <text x="986" y="244" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">Os carros abrandam</text>
+        <text x="986" y="260" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">quando há peões?</text>
+        <text x="986" y="300" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">Velocidade contra travessias,</text>
+        <text x="986" y="316" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif">a cada 15 min, com teste de controlo</text>
+
+        <!-- ATCLL Vision (IT) -->
+        <rect x="70" y="472" width="540" height="96" rx="6" fill="#eeeff2"/>
+        <rect x="70" y="472" width="540" height="96" rx="6" fill="rgba(18,20,23,0.04)" stroke="#121417" stroke-width="1"/>
+        <rect x="82" y="484" width="28" height="14" rx="2" fill="transparent" stroke="rgba(18,20,23,0.40)" stroke-width="0.8"/>
+        <text x="96" y="494" fill="rgba(18,20,23,0.80)" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">IT</text>
+        <text x="340" y="520" fill="#121417" font-size="16" font-weight="600" font-family="Inter, system-ui, sans-serif" text-anchor="middle">ATCLL Vision · painel de notificações</text>
+        <text x="340" y="544" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif" text-anchor="middle">proposta: no painel que o IT já usa</text>
+
+        <!-- Mapa de risco potencial (focal) -->
+        <rect x="670" y="472" width="540" height="96" rx="6" fill="#eeeff2"/>
+        <rect x="670" y="472" width="540" height="96" rx="6" fill="rgba(43,91,255,0.08)" stroke="#0037f2" stroke-width="1.4"/>
+        <rect x="682" y="484" width="56" height="14" rx="2" fill="transparent" stroke="rgba(0,55,242,0.50)" stroke-width="0.8"/>
+        <text x="710" y="494" fill="#0037f2" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">CÂMARA</text>
+        <text x="940" y="520" fill="#121417" font-size="16" font-weight="600" font-family="Inter, system-ui, sans-serif" text-anchor="middle">Mapa de risco potencial</text>
+        <text x="940" y="544" fill="#4e5054" font-size="11" font-family="Inter, system-ui, sans-serif" text-anchor="middle">onde intervir primeiro · não mede acidentes</text>
+
+        <!-- ============ LEGEND ============ -->
+        <line x1="40" y1="652" x2="1240" y2="652" stroke="rgba(18,20,23,0.10)" stroke-width="0.8"/>
+        <text x="40" y="684" fill="#4e5054" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em">LEGENDA</text>
+        <rect x="140" y="672" width="24" height="16" rx="3" fill="rgba(43,91,255,0.08)" stroke="#0037f2" stroke-width="1.2"/>
+        <text x="172" y="684" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">o que distingue a RiaSense</text>
+        <rect x="380" y="672" width="24" height="16" rx="3" fill="#eeeff2" stroke="#121417" stroke-width="1"/>
+        <text x="412" y="684" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">pilar</text>
+        <rect x="480" y="672" width="24" height="16" rx="3" fill="rgba(18,20,23,0.04)" stroke="#121417" stroke-width="1"/>
+        <text x="512" y="684" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">dados e destinatários</text>
+        <line x1="690" y1="680" x2="726" y2="680" stroke="#0037f2" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+        <text x="736" y="684" fill="#121417" font-size="11" font-family="Inter, system-ui, sans-serif">caminho da falha até ao alerta</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

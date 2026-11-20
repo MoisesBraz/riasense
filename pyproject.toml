@@ -1,0 +1,36 @@
+[project]
+name = "riasense"
+version = "0.1.0"
+description = "RiaSense: vigiar, completar, prever e proteger sobre os dados do Living Lab de Aveiro"
+requires-python = ">=3.11"
+# Versões fixas (corridas reprodutíveis, convenções do README); o uv.lock fixa as transitivas.
+dependencies = [
+    "duckdb==2.0.0",
+    "polars==2.1.0",
+    "pandas==3.1.1",
+    "numpy==2.4.6",
+    "scikit-learn==1.9.1",
+    "lightgbm==4.7.0",
+    "fastapi==0.163.1",
+    "uvicorn==0.54.0",
+    "pyyaml==6.0.3",
+    "python-socketio[client]==5.18.1",  # o modo «Ao vivo» (ADR-0049): cliente do socket.io público do Living Lab
+]
+
+[project.scripts]
+riasense = "riasense.__main__:main"
+
+[dependency-groups]
+dev = ["pytest==9.2.0", "httpx==0.28.1"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pipeline/riasense"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["api"]
+markers = ["integration: lê os dados brutos de RIASENSE_DATA_RAW"]

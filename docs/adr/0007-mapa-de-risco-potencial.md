@@ -1,0 +1,5 @@
+# O mapa de risco é a vista final da ④, chama-se «risco potencial» e só mostra pontos com sensor
+
+O mapa de risco não é uma 5.ª camada. Não tem modelo próprio: junta a exposição (peões, incluindo os estimados pela ②), o comportamento (a ④), a previsão (a ③) e a fiabilidade do dado (a ①). Chama-se **risco potencial** porque não há acidentes georreferenciados para o validar: o BEAV não está disponível, a API de ocorrências da ANEPC no dados.gov.pt está morta desde 2021, e os eventos do Waze são reportes de condutores. A legenda mostra sempre as componentes. Só aparecem pontos com sensor: os completados pela ② ficam tracejados («estimado»), e as ruas sem sensor ficam a cinzento («sem cobertura»). Estimar peões numa rua onde nunca houve sensor não tem forma de ser validado.
+
+Status: em parte superseded by ADR-0013, só na frase sobre a fiabilidade do dado; o resto deste ADR continua em vigor. O [ADR-0013](0013-combinacao-do-risco-potencial.md) decide que a fiabilidade do dado (a ①) não entra na soma do risco potencial: mostra-se à parte, como confiança.

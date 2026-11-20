@@ -1,0 +1,9 @@
+- name: Docker e compose
+  ansible.builtin.include_tasks: docker.yml
+  when: riasense_instalar_docker | bool
+
+- name: Código da RiaSense no commit pedido
+  ansible.builtin.include_tasks: codigo.yml
+
+- name: Arrancar e confirmar que responde
+  ansible.builtin.include_tasks: arrancar.yml

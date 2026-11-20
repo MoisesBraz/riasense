@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <title>RiaSense: os 4 pilares (versão do relatório, v3)</title>
+  <!-- Versão do relatório de 18/11 (Figura 1) de riasense-4-pilares.html (a versão completa, com legenda):
+       mesmo conteúdo, formato largo (1000×420) e letra maior para ficar legível a 451 pt de largura.
+       O eyebrow, o título e o texto de descrição da página passam para a legenda da figura.
+       v3 (18/11): textos e etiquetas da versão completa. ③ «LightGBM a 3 h, só onde erra menos do que
+       repetir ontem ou a última hora»; caixa do IT «proposta: no painel que o IT já usa»; etiquetas de fluxo
+       FALHAS · ALERTAS · SENSOR VIRTUAL · ESTIMATIVAS · PREVISÃO · COMPORTAMENTO; LEGENDA com quatro
+       entradas. A proporção 1000×420 mantém-se (3000×1260 px), por isso o espaço da figura no relatório
+       não muda. -->
+  <style>
+    html, body { margin: 0; padding: 0; background: #ffffff; }
+    svg { display: block; width: 3000px; height: auto; }
+  </style>
+</head>
+<body>
+<svg id="fig" viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t d">
+  <title id="t">RiaSense: os 4 pilares</title>
+  <desc id="d">Os dados do Living Lab de Aveiro alimentam quatro pilares: Vigiar e Completar para o IT, Prever e Proteger para a Câmara. Vigiar e Completar entregam alertas e sensores virtuais ao ATCLL Vision; Completar, Prever e Proteger alimentam o mapa de risco potencial. Legenda: destaque para o que distingue a RiaSense, pilar, dados e destinatários, e o caminho da falha até ao alerta.</desc>
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4e5054"/></marker>
+    <marker id="aa" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0037f2"/></marker>
+  </defs>
+  <style>
+    .s { font-family: Inter, system-ui, sans-serif; }
+    .m { font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.04em; }
+    .ink { fill: #121417; } .mut { fill: #4e5054; } .acc { fill: #0037f2; }
+    .h { font-size: 20px; font-weight: 600; }
+    .q { font-size: 14.5px; }
+    .k { font-size: 13.5px; }
+    .lbl { font-size: 12.5px; }
+    .tag { font-size: 11px; letter-spacing: 0.08em; }
+    .out { font-size: 18px; font-weight: 600; }
+    .lg { font-size: 13.5px; }
+  </style>
+
+  <rect width="1000" height="420" rx="10" fill="#eeeff2"/>
+
+  <!-- setas: Living Lab → pilares -->
+  <line x1="118.5" y1="60" x2="118.5" y2="82" stroke="#4e5054" stroke-width="1.4" marker-end="url(#a)"/>
+  <line x1="399.5" y1="60" x2="399.5" y2="82" stroke="#4e5054" stroke-width="1.4" marker-end="url(#a)"/>
+  <line x1="640.5" y1="60" x2="640.5" y2="82" stroke="#4e5054" stroke-width="1.4" marker-end="url(#a)"/>
+  <line x1="881.5" y1="60" x2="881.5" y2="82" stroke="#4e5054" stroke-width="1.4" marker-end="url(#a)"/>
+  <!-- ① → ② (falhas) -->
+  <line x1="229" y1="170" x2="287" y2="170" stroke="#0037f2" stroke-width="1.8" marker-end="url(#aa)"/>
+  <rect x="234" y="146" width="50" height="17" rx="2" fill="#eeeff2"/>
+  <text x="259" y="159" class="m lbl mut" text-anchor="middle">FALHAS</text>
+  <!-- saídas -->
+  <line x1="118.5" y1="248" x2="118.5" y2="304" stroke="#0037f2" stroke-width="1.8" marker-end="url(#aa)"/>
+  <text x="128" y="280" class="m lbl mut">ALERTAS</text>
+  <line x1="366" y1="248" x2="366" y2="304" stroke="#4e5054" stroke-width="1.4" marker-end="url(#a)"/>
+  <text x="356" y="280" class="m lbl mut" text-anchor="end">SENSOR VIRTUAL</text>
+  <path d="M 446,248 V 268 Q 446,276 454,276 H 570 Q 578,276 578,284 V 304" fill="none" stroke="#4e5054" stroke-width="1.4" marker-end="url(#a)"/>
+  <rect x="460" y="267" width="102" height="18" rx="2" fill="#eeeff2"/>
+  <text x="511" y="280.5" class="m lbl mut" text-anchor="middle">ESTIMATIVAS</text>
+  <line x1="640.5" y1="248" x2="640.5" y2="304" stroke="#4e5054" stroke-width="1.4" marker-end="url(#a)"/>
+  <text x="650" y="280" class="m lbl mut">PREVISÃO</text>
+  <line x1="881.5" y1="248" x2="881.5" y2="304" stroke="#4e5054" stroke-width="1.4" marker-end="url(#a)"/>
+  <text x="871" y="280" class="m lbl mut" text-anchor="end">COMPORTAMENTO</text>
+
+  <!-- Living Lab (dados) -->
+  <rect x="8" y="6" width="984" height="54" rx="6" fill="rgba(18,20,23,0.04)" stroke="#121417" stroke-width="1"/>
+  <rect x="20" y="15" width="54" height="18" rx="2" fill="none" stroke="rgba(18,20,23,0.4)" stroke-width="0.9"/>
+  <text x="47" y="27.5" class="m tag ink" text-anchor="middle">DADOS</text>
+  <text x="90" y="29" class="s h ink">Living Lab de Aveiro (ATCLL)</text>
+  <text x="90" y="49" class="s lbl mut" style="font-size:14px">passadeiras · segmentos de estrada · estacionamento · zonas turísticas, ligados por RSU</text>
+
+  <!-- ① Vigiar (destaque) -->
+  <rect x="8" y="84" width="221" height="164" rx="6" fill="rgba(43,91,255,0.08)" stroke="#0037f2" stroke-width="1.6"/>
+  <rect x="20" y="94" width="30" height="18" rx="2" fill="none" stroke="rgba(0,55,242,0.5)" stroke-width="0.9"/>
+  <text x="35" y="107" class="m tag acc" text-anchor="middle">IT</text>
+  <text x="20" y="136" class="s h ink">① Vigiar</text>
+  <text x="20" y="162" class="s q ink">Que sensor deixou de ver,</text>
+  <text x="20" y="181" class="s q ink">e foi a rede ou o aparelho?</text>
+  <text x="20" y="204" class="s k mut">Silêncios inesperados,</text>
+  <text x="20" y="221" class="s k mut">agrupados por RSU</text>
+
+  <!-- ② Completar -->
+  <rect x="289" y="84" width="221" height="164" rx="6" fill="#eeeff2" stroke="#121417" stroke-width="1"/>
+  <rect x="301" y="94" width="30" height="18" rx="2" fill="none" stroke="rgba(18,20,23,0.4)" stroke-width="0.9"/>
+  <text x="316" y="107" class="m tag ink" text-anchor="middle">IT</text>
+  <text x="301" y="136" class="s h ink">② Completar</text>
+  <text x="301" y="162" class="s q ink">Quanto mediria o sensor</text>
+  <text x="301" y="181" class="s q ink">que está sem comunicação?</text>
+  <text x="301" y="204" class="s k mut">Sensor virtual: perfil próprio</text>
+  <text x="301" y="221" class="s k mut">× variação dos 5 vizinhos</text>
+
+  <!-- ③ Prever -->
+  <rect x="530" y="84" width="221" height="164" rx="6" fill="#eeeff2" stroke="#121417" stroke-width="1"/>
+  <rect x="542" y="94" width="64" height="18" rx="2" fill="none" stroke="rgba(18,20,23,0.4)" stroke-width="0.9"/>
+  <text x="574" y="107" class="m tag ink" text-anchor="middle">CÂMARA</text>
+  <text x="542" y="136" class="s h ink">③ Prever</text>
+  <text x="542" y="162" class="s q ink">O que vem daqui a 3 horas?</text>
+  <text x="542" y="204" class="s k mut">LightGBM a 3 h, só onde erra</text>
+  <text x="542" y="221" class="s k mut">menos do que repetir ontem</text>
+  <text x="542" y="238" class="s k mut">ou a última hora</text>
+
+  <!-- ④ Proteger -->
+  <rect x="771" y="84" width="221" height="164" rx="6" fill="#eeeff2" stroke="#121417" stroke-width="1"/>
+  <rect x="783" y="94" width="64" height="18" rx="2" fill="none" stroke="rgba(18,20,23,0.4)" stroke-width="0.9"/>
+  <text x="815" y="107" class="m tag ink" text-anchor="middle">CÂMARA</text>
+  <text x="783" y="136" class="s h ink">④ Proteger</text>
+  <text x="783" y="162" class="s q ink">Os carros abrandam</text>
+  <text x="783" y="181" class="s q ink">quando há peões?</text>
+  <text x="783" y="204" class="s k mut">Velocidade contra travessias,</text>
+  <text x="783" y="221" class="s k mut">a cada 15 min, com teste</text>
+  <text x="783" y="238" class="s k mut">de controlo</text>
+
+  <!-- ATCLL Vision (IT) -->
+  <rect x="8" y="306" width="474" height="58" rx="6" fill="rgba(18,20,23,0.04)" stroke="#121417" stroke-width="1"/>
+  <rect x="20" y="316" width="30" height="18" rx="2" fill="none" stroke="rgba(18,20,23,0.4)" stroke-width="0.9"/>
+  <text x="35" y="329" class="m tag ink" text-anchor="middle">IT</text>
+  <text x="257" y="337" class="s out ink" text-anchor="middle">ATCLL Vision · painel de notificações</text>
+  <text x="257" y="355" class="s lbl mut" text-anchor="middle" style="font-size:13.5px">proposta: no painel que o IT já usa</text>
+
+  <!-- Mapa de risco potencial (destaque) -->
+  <rect x="518" y="306" width="474" height="58" rx="6" fill="rgba(43,91,255,0.08)" stroke="#0037f2" stroke-width="1.6"/>
+  <rect x="530" y="316" width="64" height="18" rx="2" fill="none" stroke="rgba(0,55,242,0.5)" stroke-width="0.9"/>
+  <text x="562" y="329" class="m tag acc" text-anchor="middle">CÂMARA</text>
+  <text x="767" y="337" class="s out ink" text-anchor="middle">Mapa de risco potencial</text>
+  <text x="767" y="355" class="s lbl mut" text-anchor="middle" style="font-size:13.5px">onde intervir primeiro · não mede acidentes</text>
+
+  <!-- LEGENDA -->
+  <line x1="8" y1="378" x2="992" y2="378" stroke="rgba(18,20,23,0.14)" stroke-width="0.9"/>
+  <text x="8" y="402" class="m ink" style="font-size:10.5px;letter-spacing:0.14em" fill-opacity="0.8">LEGENDA</text>
+  <rect x="88" y="390" width="24" height="16" rx="3" fill="rgba(43,91,255,0.08)" stroke="#0037f2" stroke-width="1.3"/>
+  <text x="120" y="402.5" class="s lg ink">o que distingue a RiaSense</text>
+  <rect x="318" y="390" width="24" height="16" rx="3" fill="#eeeff2" stroke="#121417" stroke-width="1"/>
+  <text x="350" y="402.5" class="s lg ink">pilar</text>
+  <rect x="424" y="390" width="24" height="16" rx="3" fill="rgba(18,20,23,0.04)" stroke="#121417" stroke-width="1"/>
+  <text x="456" y="402.5" class="s lg ink">dados e destinatários</text>
+  <line x1="632" y1="398" x2="668" y2="398" stroke="#0037f2" stroke-width="1.6" marker-end="url(#aa)"/>
+  <text x="680" y="402.5" class="s lg ink">caminho da falha até ao alerta</text>
+</svg>
+</body>
+</html>

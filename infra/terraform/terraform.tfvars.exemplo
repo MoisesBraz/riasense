@@ -1,0 +1,7 @@
+# Copiar para terraform.tfvars (fora do git) e ajustar.
+vm_id             = 160
+ipv4              = "192.0.2.10/24"   # fixo: o Ansible precisa de saber o endereço
+gateway           = "192.0.2.1"
+chave_ssh_publica = "ssh-ed25519 AAAA... <utilizador>@<máquina>"
+# memoria_mib     = 2048
+node              = "<nó>"

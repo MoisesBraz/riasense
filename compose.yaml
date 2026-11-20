@@ -1,0 +1,35 @@
+# Sem base de dados (ADR-0003): a API só lê os Parquet de data/processed/.
+services:
+  api:
+    build: {context: ., dockerfile: api/Dockerfile}
+    environment:
+      RIASENSE_DATA_PROCESSED: /app/data/processed
+    volumes:
+      - ./data/processed:/app/data/processed:ro
+      - ./config:/app/config:ro
+    ports: ["${API_PORT:-8000}:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 10s
+      retries: 3
+  web:
+    build: web
+    ports: ["${WEB_PORT:-5173}:80"]
+    depends_on: {api: {condition: service_healthy}}
+    networks: [default, tunel]
+  # Só na VM (perfil «tunnel», ligado pelo .env do Ansible): o «docker compose up» do portátil não o arranca (ADR-0028).
+  # Fica numa rede só com a web: chega ao nginx (no painel do Cloudflare, o serviço é http://web:80), e não à API nem ao host.
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.7
+    restart: unless-stopped
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+    command: tunnel --no-autoupdate run
+    depends_on:
+      - web
+    networks: [tunel]
+    profiles:
+      - tunnel
+
+networks:
+  tunel: {}

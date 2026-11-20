@@ -1,0 +1,236 @@
+# Parâmetros da RiaSense: zona, limiares, pesos e fontes.
+# Para replicar noutra cidade: trocar estes valores, sem mexer no código.
+
+cidade: Aveiro
+fuso_horario: Europe/Lisbon            # em novembro, UTC+0 (hora UTC = hora local)
+periodo_dados: {inicio: "2026-11-03T15:00", fim: "2026-11-10T11:00"}   # janela comum a todos os ficheiros
+unidades_velocidade: m/s               # todos os sensorType (câmara incluída); km/h = ×3,6
+
+demo:
+  zona: av-25-de-abril-oita
+  rsu: [RoadSideUnit:0030]
+  passadeiras: [SmartCrosswalk:0019, SmartCrosswalk:0020, SmartCrosswalk:0021, SmartCrosswalk:0022]
+  incidente: {rsu: RoadSideUnit:0030, inicio: "2026-11-04T20:06"}
+  alternativas: [RoadSideUnit:0035, RoadSideUnit:0038]   # Universidade/Santiago; Estação
+
+ingerir:                               # limpeza dos CSV (perfil-dos-dados.md, exceto as unidades)
+  velocidade_invalida: 16383           # marcador de inválido nas velocidades dos segmentos; o valor passa a nulo
+  duracao_max_s: 3600                  # duração do segmento = 0 ou acima disto passa a nula
+  travessia_max_s: 60                  # travessias mais longas são descartadas
+
+vigiar:                                # ①
+  tipos_sensor: [passadeira, zona, estacionamento, segmento]   # tipos de sensores.parquet a vigiar
+  falha_min_horas: 2                   # mínimo de horas sem eventos, em horas com atividade, para haver falha inesperada
+  esperado_min_eventos_hora: 10        # mediana da mesma hora noutros dias; abaixo disto a hora é de sossego normal
+  silencio_longo_h: 24                 # silêncio longo: sai do «habitual» do sensor em todas as avaliações (ADR-0025)
+  total_esperado_min: 20               # silêncio longo com ≥ estes eventos esperados, sem limiar por hora, é falha
+  agrupar_inicio_min: 15               # falhas da mesma RSU que começam até estes minutos depois da 1.ª = rede
+  usar_meteo: false                    # chuva no esperado; só se cumprir o critério do README da ① (ADR-0009)
+  chuva_min_mm: 0.5                    # hora com chuva, para o fator de chuva da variante com meteorologia
+
+completar:                             # ②
+  vizinhos_mesmo_tipo: 5
+  razao_max: 3                         # limite da razão vizinhos-agora / vizinhos-habitual
+  intervalo: 0.8
+  completaveis: [passadeiras, zonas_turisticas, segmentos]   # estacionamento não: sem correlação
+  metodo: {passadeira: razao, zona: razao, segmento: ridge}   # ADR-0046: a ridge só nos segmentos (ganha nos 2 testes)
+  piso_eventos_h: 1                    # denominador mínimo da razão e do intervalo: evita dividir por ~0 à noite
+  ativo_min_eventos_h: 1               # média mínima (eventos/h) para ser completado ou servir de vizinho; exclui os sensores sem comunicação
+  horas_noite: [1, 2, 3, 4, 5]         # verificação da forma diária (ADR-0005): de noite a estimativa fica ≈ 0
+  referencia: mesma_hora_dia_anterior  # GLOSSARY: cada modelo é comparado com ela
+  semente: 42                          # LightGBM (comparação); o modelo de razão não sorteia nada
+  comparacao:                          # modelos de comparação na avaliação (ADR-0005); a ridge também dá os segmentos (ADR-0046)
+    ridge_alphas_log10: [-2, 4, 15]    # RidgeCV escolhe entre 15 alphas de 10^-2 a 10^4
+    lightgbm: {n_estimators: 200, learning_rate: 0.05, num_leaves: 7, min_child_samples: 3}   # árvores pequenas: 29 h de treino
+  avaliacao:
+    simulacao_treino_h: 29             # treino só com as horas antes de demo.incidente (viabilidade/task1.py)
+    deixar_um_de_fora_corte: "2026-11-08T11:00"   # ~5 dias de treino e 2 de teste (viabilidade/seriesA.py)
+    noite_max_vezes_real: 1.5          # ADR-0046: a média da noite de um método novo não passa de 1,5× a real (2 testes)
+  degradacao_max: 0.5                  # «próximo sensor» (ADR-0015): queda relativa ao tipo acima disto → «verificar o sensor»
+  degradacao_antes: ["2026-11-04", "2026-11-06"]   # dias completos (inclusive) da média diária «antes»
+  degradacao_depois: ["2026-11-07", "2026-11-09"]  # dias completos (inclusive) da média diária «depois»
+  subida_min: 2.0                      # razão relativa ao tipo ≥ isto: a frase avisa que a atividade subiu; fica no ranking
+
+prever:                                # ③ (ADR-0010, ADR-0027); critérios fixados antes do modelo (pipeline/README.md)
+  horizontes_h: [3, 6]                 # um modelo por horizonte; o risco potencial usa o 1.º (ADR-0027)
+  horizontes_avaliacao_h: [1]          # só na avaliação (ADR-0027, ponto 3): a 1 h a persistência basta; nunca dá previsões
+  intervalo:                           # intervalo de previsão p10–p90 (ADR-0035); escrito antes do primeiro resultado
+    nivel: 0.8                         # 80 %: os quantis 0,10 e 0,90 dos resíduos do modelo de calibração
+    calibracao_h: 24                   # o dia de calibração são as 24 h antes de teste_inicio: não entra no teste nem no treino desse modelo
+  # Os atrasos derivam de cada horizonte h (prever.com_horizonte): o próprio sensor há h, h+1, h+2 e 24 h e a média
+  # dos vizinhos de vizinhos.parquet (mesmo tipo) há h e 24 h. Nenhum usa horas ainda por medir.
+  referencia: mesma_hora_dia_anterior  # só entra se ganhar a esta referência e à persistência (o valor de há h horas)
+  teste_inicio: "2026-11-08T11:00"     # teste: daqui ao fim da janela (48 h, o corte de viabilidade/seriesA.py); treino: antes
+  segmento_min_veiculos_hora: 20       # segmentos ativos: média no treino ≥ isto (≈ os 3000 eventos/semana da viabilidade)
+  meteo_variaveis: [chuva_mm, temperatura_c]   # variante «com meteorologia», da última hora conhecida (meteo.parquet)
+  meteo_melhoria_min: 0.05             # a meteorologia melhora se baixar o erro mediano ≥ 5% ou se mudar a decisão «ganha»; a escolha faz-se no teste (ADR-0009): fora do teste fica no roadmap
+  antecipacao_atraso_max_h: 6          # grafo «o que antecipa o quê»: atrasos de 0 a 6 h entre as 4 verticais
+  lightgbm: {objective: l1, n_estimators: 300, learning_rate: 0.05, num_leaves: 15, min_child_samples: 20, seed: 42}
+
+proteger:                              # ④ (ADR-0006; método de pipeline/viabilidade/task2.py)
+  raio_segmentos_m: 30
+  intervalo_min: 15
+  min_veiculos_intervalo: 5            # intervalos com menos veículos saem da regressão
+  por_travessias: 10                   # o efeito apresenta-se em km/h por +10 travessias no intervalo
+  nivel_ic: 0.95
+  lags_newey_west: 4                   # erros-padrão robustos à semelhança entre intervalos seguidos
+  quantil_movimentado: 0.75            # intervalos movimentados: travessias ≥ este quantil da passadeira
+  quantil_calmo: 0.25                  # intervalos calmos: travessias ≤ este quantil
+  quantil_assinalar: 0.5               # assinalada: sem abrandamento e travessias médias ≥ este quantil entre passadeiras
+  usar_meteo: false                    # chuva e temperatura como controlos; só se melhorarem (ADR-0009, meteo_proteger.parquet)
+  # Saem os intervalos que tocam uma falha da passadeira ou do seu placebo em falhas.parquet (a ①): sem travessias.
+  # O placebo usa sempre a passadeira mais distante.
+
+luminosidade:                          # contexto «às escuras» (ADR-0018): posição do sol, sem fonte externa
+  latitude: 40.64                      # as coordenadas da cidade (as mesmas da meteorologia)
+  longitude: -8.65
+  crepusculo_graus: -6                 # sol entre 0° e isto: crepúsculo; abaixo: noite
+  minuto_da_hora: 30                   # cada hora classifica-se pelo sol no meio da hora
+
+risco_potencial:                       # mapa de risco potencial, por passadeira e hora (ADR-0007, ADR-0013)
+  pesos: {exposicao: 0.4, comportamento: 0.4, previsao: 0.2}   # sem previsão na hora: 0,5 / 0,5 (renormalizado)
+  sensibilidade: {intervalo: [0.3, 0.5], passo: 0.1}           # pesos da exposição e do comportamento; previsão = 1 − os dois
+
+agora:                                 # painel «agora» (ADR-0030, ADR-0032): a ① ao vivo, só em memória, nas passadeiras e nos segmentos junto a elas
+  ativo: false                         # desligado por omissão; liga-se na demo
+  fonte: simulador                     # simulador (dados fictícios, ADR-0032) ou context_broker (só com autorização do IT)
+  prob_max: 1.0e-6                     # «sem comunicação»: o silêncio tem probabilidade < isto de ser acaso (Poisson), por sensor e por RSU
+  intervalo_s: 60                      # leitura da fonte a cada 60 s (no simulador, em tempo simulado)
+  simulador:
+    semente: 42
+    velocidade: 60                     # ×60: 1 minuto simulado por segundo; ×1 = ritmo real
+    inicio: {dia_da_semana: 2, hora: "19:50"}   # 0 = segunda: quarta-feira, um dia útil; o relógio só mostra a hora
+    # As taxas são a base da ① (ADR-0025): a mediana da mesma hora, sem os silêncios longos, em dias úteis e ao fim de semana.
+    # O botão «simular a falha» deixa sem comunicação as passadeiras e os segmentos da RSU de demo.incidente.
+ao_vivo:                               # modo «Ao vivo» (ADR-0049): o socket.io público do Living Lab, só enquanto alguém está no modo
+  ativo: true                          # o botão aparece sempre; false só para o esconder em caso de avaria (a ligação só abre com o clique)
+  url: https://api.aveiro-living-lab.it.pt
+  intervalo_s: 1                       # a web lê o último retrato a este ritmo (o socket manda ~6 por segundo)
+  inativo_s: 30                        # sem pedidos da web durante isto (o separador fechou-se), a ligação fecha-se sozinha
+  limite_s: 10                         # tempo máximo para ligar; depois, «sem rede»
+  fundir_m: 3                          # a mesma classe a menos disto no mesmo retrato conta uma vez (câmara + radar, estações vizinhas; ADR-0055)
+  parado_ms: 0.3                       # abaixo disto (m/s) um veículo está lento; o socket manda o heading a 0
+  parado_s: 30                         # lento há mais disto = parado: desenha-se mais discreto e sem número de velocidade
+  rumo_m: 15                           # um parado sem rumo conhecido toma o do segmento com câmara ou radar a menos disto
+  passadeira_m: 1                      # um peão conta para a passadeira se estiver dentro do polígono ou a menos disto (ADR-0055, ponto 2; com 5 m contavam os do passeio)
+  segmento_m: 8                        # um veículo conta para o segmento com câmara ou radar mais próximo, a menos disto da linha
+  janela_min: 15                       # a janela móvel das contagens ao vivo (desde que se abriu o modo, se for menos); só em memória
+  janela_minima_s: 120                 # com menos janela do que isto, ainda não há número por hora (seria ruído)
+  costura_s: 20                        # o Living Lab troca o id do mesmo objeto a meio: um id novo do mesmo grupo que aparece perto
+  costura_m: 8                         #   de um que sumiu há menos de costura_s (a costura_m mais o que andou) é o mesmo e não conta outra vez
+  calada_s: 120                        # uma fonte (estação e sensor do Living Lab) sem deteções há mais disto deixa os sensores que vê «sem dados ao vivo» (ADR-0007)
+validacao:                             # ② e ③ em várias janelas (ADR-0031); escrito antes do 1.º resultado
+  janelas: ["2026-11-06", "2026-11-07", "2026-11-08", "2026-11-09"]   # um dia inteiro de teste (00h–24h); treino: as horas de periodo_dados antes dele
+  candidatos:                          # parâmetros fixos, sem afinação; o resto fica nos valores por omissão do scikit-learn
+    svr: {kernel: rbf, C: 1.0, epsilon: 0.1, gamma: scale}   # variáveis e alvo padronizados pela média e pelo desvio do treino
+    random_forest: {n_estimators: 300, min_samples_leaf: 5, random_state: 42}
+    knn: {n_neighbors: 10, weights: distance}                # variáveis padronizadas
+    poisson: {alpha: 1.0e-4}
+  hora:                                # como entra a hora em cada modelo
+    indicadoras: [poisson, ridge]      # 24 colunas de 0 e 1
+    seno_cosseno: [svr, knn]
+    numero: [random_forest, lightgbm]
+  completar:                           # ②: 5 vizinhos, hora e fim de semana; «deixar um de fora» nas janelas e a simulação da falha (29 h)
+    atual: razao
+    candidatos: [poisson, ridge, knn, svr, random_forest, lightgbm]   # a ridge e o LightGBM com completar.comparacao
+    vizinhos: [3, 5, 8]                # o modelo de razão com estes vizinhos (só informa)
+  prever:                              # ③: em cada horizonte de prever.horizontes_h e horizontes_avaliacao_h (1, 3 e 6 h), com as variáveis do LightGBM sem meteorologia
+    atual: lightgbm                    # sem meteorologia
+    candidatos: [poisson, knn, svr, random_forest]
+    ganhar_a: [referencia, persistencia]   # no erro médio das janelas
+    grupos:                            # retira-se ao LightGBM um grupo de cada vez; os grupos não se sobrepõem
+      # {h}, {h+1} e {h+2} valem o horizonte (ADR-0031: os atrasos curtos são os do próprio sensor há h, h+1 e h+2 horas)
+      atrasos_curtos: ["atraso_{h}h", "atraso_{h+1}h", "atraso_{h+2}h"]
+      dia_anterior: [atraso_24h, vizinhos_24h]
+      vizinhos_curtos: ["vizinhos_{h}h"]
+      hora_e_fim_de_semana: [hora, fim_de_semana]
+  regra:                               # ponto 5: em cada tipo e, na ③, em cada horizonte, com dias = todos
+    melhoria_min: 0.05                 # erro médio nas janelas ≥ 5% abaixo do atual; também o desempate entre candidatos
+    janelas_min: 3                     # melhor do que o atual em ≥ 3 das 4 janelas
+    # Na ②, também: não errar mais do que a razão na simulação, e em cada janela `noite` ≤ max(`noite_real`, `noite` da razão).
+    simplicidade: [razao, poisson, ridge, knn, svr, random_forest, lightgbm]   # se a diferença for < melhoria_min, fica o 1.º
+
+carros:                                # camada «Trânsito» do mapa (ADR-0034): só os carros medidos (câmara; senão, radar)
+  veiculos_por_ponto: 20               # cada ponto ≈ 20 veículos medidos nessa hora, nesse segmento
+  pontos_max: 600                      # teto de pontos no ecrã, por desempenho (ADR-0034, riscos)
+  aceleracao: 3                        # a velocidade medida de cada segmento, acelerada pelo mesmo fator para todos
+
+pessoas:                                # os peões da vista 3D (ADR-0041): só nas passadeiras, na quantidade medida
+  travessias_por_figura: 10            # cada figura ≈ 10 travessias medidas nessa hora, nessa passadeira
+  figuras_max: 12                      # teto de figuras por passadeira (acima de 120 travessias/h cada figura vale mais)
+  aceleracao: 2                        # o passo de 1,3 m/s acelerado; fixa-se depois de se ver (ADR-0041, ponto 3)
+  aspeto: neutro                       # neutro (silhuetas iguais) ou variado (ilustrativo): ver o ADR-0041, ponto 4
+
+avenida:                               # a avenida em 3D (ADR-0044): a via acerta-se pelas passadeiras medidas
+  faixa_estacionamento_m: 2.0          # do lado dos lugares com sensor (à direita do eixo da cadeia)
+  passeio_m: 2.1                       # passeio contínuo por fora do asfalto (a largura mediana dos patamares medidos)
+  largura_faixa_min_m: 2.5             # as linhas entre faixas só se desenham se a largura de cada faixa ficar neste intervalo
+  largura_faixa_max_m: 3.8
+  raio_corredor_m: 30                  # patamares medidos a esta distância do eixo entram no corredor
+  raio_juncao_m: 14                    # o asfalto das junções: fecho convexo das vias neste raio à volta do nó
+  folga_passadeira_m: 0.3              # o passeio contínuo para a esta distância da passadeira
+  folga_estacionamento_m: 3.0          # a faixa de estacionamento vai do 1.º ao último lugar, mais esta folga
+  desvio_lugar_max_m: 2.0              # acima disto, o carro fica onde o lugar foi medido («posição por confirmar»)
+  passo_m: 1.0                         # amostragem ao longo do eixo e dos deslocamentos
+  rsu_estacionamento: ["RoadSideUnit:0030"]
+  passadeiras_fora: ["0024"]           # atravessa a Rua Infante D. Henrique, fora do corredor
+  # Cadeias: pares [segmento no sentido do eixo, segmento do outro sentido, recorte] seguidos; as passadeiras medem a via.
+  # O eixo do segmento corre perto de uma berma (ADR-0044): o centro e a largura vêm sempre dos patamares.
+  cadeias:
+    - nome: "Av. 25 de Abril (NO → cruzamento)"
+      pares: [[11137, 10956, "fim:20"], [10955, 11173, null], [11172, 11167, null]]
+      passadeiras: ["0023", "0021"]
+    - nome: "Av. 25 de Abril (cruzamento → SE)"
+      pares: [[11168, 10084, "ini:70"]]
+      passadeiras: ["0019"]
+      estacionamento: true             # os 10 lugares da RSU0030, do lado sudoeste
+    - nome: "Av. de Oita (SO → cruzamento)"
+      pares: [[11152, 10366, "fim:7"], [10368, 11169, null]]
+      passadeiras: ["0022"]
+      faixas_por_confirmar: true       # 3+3 faixas dá 2,3 m por faixa: confirmar o totalLaneNumber com o IT
+    - nome: "Rua Dom Afonso V (cruzamento → NE)"
+      pares: [[11166, 11165, null]]
+      passadeiras: ["0020"]
+      eixo_e_centro: true              # aqui o eixo do segmento coincide com o centro da via
+  juncoes:
+    - {nome: cruzamento, segmento: 11172, ponta: fim}
+    - {nome: "nó da SC0023", segmento: 10955, ponta: ini}
+    - {nome: "nó de Oita", segmento: 10368, ponta: ini}
+
+mapa:                                  # o mapa da web (a web lê o espelho em web/src/demo.json; o teste config.test.ts compara-os)
+  edificio_altura_m: 9                 # edifícios sem altura no OpenStreetMap, em relevo (ADR-0037): ~3 pisos; a legenda diz «aproximada»
+  sinais_h7: [SmartCrosswalk:0019, SmartCrosswalk:0022]   # o sinal H7 nas pontas, na vista 3D
+  semaforos_ponta_oposta: [SmartCrosswalk:0021]   # o semáforo de braço na ponta oeste (e o poste de peões na este): visto no local
+
+voz:                                   # a pergunta por voz (ADR-0054); espelho em web/src/demo.json (config.test.ts)
+  ruas:                                # escritas à mão; os segmentos (RoadSegment) de cada rua vêm do nome da via no OpenStreetMap, e os sentidos dos rumos da segmentos_carros.geojson
+    - {nome: "Av. 25 de Abril", sentidos: [[10084], [11168]]}   # 316° | 136°, junto à RSU0030, medidos pelo radar (ADR-0034)
+    - {nome: "Av. de Oita", sentidos: [[10368, 11146, 11152], [10366, 11153, 11169]]}   # 47° | 227°
+    - {nome: "Av. da Universidade", sentidos: [[10415, 10419, 11285, 11328, 11361, 11362], [10871]]}   # 330°–343° | 156°
+
+fontes_externas:
+  meteo: {fonte: open-meteo-archive, url: "https://archive-api.open-meteo.com/v1/archive",   # CC BY 4.0; `riasense meteo` (com rede)
+          latitude: 40.64, longitude: -8.65, variaveis: [precipitation, temperature_2m]}
+  osm: {fonte: overpass, url: "https://overpass-api.de/api/interpreter",   # ODbL; `riasense osm` (com rede, uma vez)
+        margem_graus: 0.01, raio_max_m: 25, tempo_max_s: 90}   # caixa das passadeiras + margem; emparelha a ≤ raio (ADR-0019)
+  waze: {estado: sem_dados}              # o mentor do IT confirmou que não há eventos do Waze da semana; fica no roadmap (ADR-0009)
+  anepc:                               # arquivo público 2016–05/07/2020, sem licença declarada, autorizado só como teste de coerência (ADR-0036, pergunta 7)
+    fonte: centraldedados/protecao_civil
+    url: "https://raw.githubusercontent.com/centraldedados/protecao_civil/{commit}/data/{ficheiro}"
+    commit: 573eb0583efe35f3aa44fd748ae0b4f932234cc8   # 10/12/2022; os CSV ficam fora do git (RIASENSE_DATA_ANEPC)
+    ficheiros:                         # SHA-256 de cada CSV, verificado na descarga e em cada corrida
+      anpc-2016.csv: ece54b55ac8b7132d210a9def436fc3e0bd15f96445123455bfd321a432cb92e
+      anpc-2017.csv: 2de2e712d64d04a8da6aa0920abf8b511a4d16ae10652aacf5b183b5926eae60
+      anpc-2018.csv: 0534520081bef090d1932afaa687102fc659c96b432e06044df603a54d4849fc
+      anpc-2019.csv: bb107fc05799471aa1a828dd0002dd9808ffad07dc3ef5de8f3a6613e8066d1a
+      anpc-2020.csv: 9328d4ce99b31d537494c752ea6dec0b9dcbe5f3c00020225319578aed5d1f76
+
+validacao_anepc:                       # coerência temporal do risco potencial com os atropelamentos da ANEPC (ADR-0036); escrito antes do 1.º resultado
+  natureza: "Riscos Tecnológicos / Acidentes / Atropelamento rodoviário"   # o ferroviário fica fora
+  ambitos:                             # filtros sobre Distrito e Concelho do CSV (maiúsculas); o país só serve de referência
+    concelho: {distrito: AVEIRO, concelho: AVEIRO}
+    distrito: {distrito: AVEIRO}
+    pais: {}
+  ambito_leitura: distrito             # o único que sustenta a frase (o concelho tem poucas ocorrências)
+  bootstrap: {n: 2000, semente: 42, nivel: 0.95}   # reamostragem dos atropelamentos; percentis 2,5 e 97,5
+  coerente_spearman_min: 0.5           # «coerente»: Spearman do risco ≥ 0,5 e limite inferior do IC > 0

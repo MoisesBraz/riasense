@@ -1,0 +1,168 @@
+/*
+ * Tokens da RiaSense: o ÚNICO sítio com cores, espaço, raios e tipografia.
+ * Fonte: Figma «RiaSense — Protótipo», página Fundamentos.
+ * Regra 60/30/10: o azul #2B5BFF só marca o que é interativo ou ativo (acento), nunca fundos nem texto corrido. Nos dados,
+ * só as ruas com sensor (ADR-0033, ponto 2); os estados do sensor têm as cores fixas do ADR-0033, ponto 1.
+ * Os componentes e o estilo do mapa leem estas variáveis; não levam cores escritas à mão.
+ */
+:root {
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* Inter é provisória no desenho; sem rede não se descarrega, por isso cai na fonte do sistema. */
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --type-display: 600 40px/48px var(--font-sans);
+  --type-h1: 600 32px/38px var(--font-sans);
+  --type-h2: 600 24px/30px var(--font-sans);
+  --type-h3: 600 18px/24px var(--font-sans);
+  --type-body: 400 16px/24px var(--font-sans);
+  --type-body-strong: 600 16px/24px var(--font-sans);
+  --type-small: 400 14px/20px var(--font-sans);
+  --type-label: 500 14px/20px var(--font-sans);
+  --type-seal: 600 12px/16px var(--font-sans);
+  --type-number-lg: 600 32px/36px var(--font-sans);
+  --type-number-md: 600 24px/28px var(--font-sans);
+
+  --touch-min: 44px;
+  --panel-width: 420px;
+  --topbar-height: 64px;
+  --motion: 200ms;
+
+  /* Iguais nos dois modos: o accent de preenchimento e os degraus do risco potencial. */
+  --accent-fill: #2b5bff;
+  --text-on-accent: #f7f8fa;
+  --risk-1: #f3e9c6;
+  --risk-2: #f0c96b;
+  --risk-3: #e58a3c;
+  --risk-4: #c2442a;
+  --risk-5: #7e1d1b;
+  /* Número dos degraus: 1 a 3 com o fundo escuro, 4 e 5 com o texto sobre o azul (contraste ≥ 4,76:1). */
+  --risk-ink-light: #121417;
+  --risk-ink-dark: #f7f8fa;
+}
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-base: #121417;
+  --bg-card: #1c1e21;
+  --bg-raised: #26282b;
+  --superficie: #23262a;
+  --border-default: #3e4043;
+  --text-primary: #d9dce1;
+  --text-secondary: #a1a4a8;
+  --accent-ink: #688aff;
+  --state-ok: #4cc38a;
+  --state-warn: #f2b84b;
+  --state-error: #ff7b72;
+  --state-device: #ff9a3c; /* falha de dispositivo (ADR-0033): laranja desde o ADR-0042; o ícone e a forma distinguem-na do âmbar */
+  --on-state: #121417; /* o ícone sobre um fundo de estado: 7,3:1 a 10,3:1 */
+  --nocoverage-line: #6b7179;
+  --nocoverage-label: #8b919b;
+  --map-bg: #141619; /* o mapa um tom abaixo dos painéis: a UI lê-se por cima dele */
+  --map-water: #16233a;
+  --map-block: #1e2125;
+  /* O fundo do mapa segue a luminosidade da hora (ADR-0040): os `--map-*` são o dia; o crepúsculo e a noite têm os seus.
+     A noite é um tom mais escura e mais azulada. Os estados têm pelo menos 3:1 contra as 3 paletas (tokens.test.ts). */
+  --map-bg-crepusculo: #11141b;
+  --map-water-crepusculo: #14223c;
+  --map-block-crepusculo: #1a1e25;
+  --map-road-nocoverage-crepusculo: #6b7179;
+  --map-label-crepusculo: #8b919b;
+  --map-bg-noite: #0b0f17;
+  --map-water-noite: #0d1a30;
+  --map-block-noite: #131821;
+  --map-road-nocoverage-noite: #667082;
+  --map-label-noite: #8b95a8;
+  /* O céu da vista 3D (ADR-0042): só se vê com o mapa muito inclinado, e segue a luminosidade da hora como o fundo. */
+  --map-sky: #2b3f63;
+  --map-horizon: #45546b;
+  --map-sky-crepusculo: #2a2347;
+  --map-horizon-crepusculo: #8a5a4a;
+  --map-sky-noite: #070b16;
+  --map-horizon-noite: #1b2436;
+  /* A passadeira desenhada no mapa (ADR-0038): o asfalto próprio e as listas brancas por cima. As ruas do mapa são linhas mais
+     estreitas do que a passadeira e não há asfalto; sem ele, as listas ficavam a 1,27:1 do fundo no tema claro. */
+  --crosswalk-asfalto: #3a3f46;
+  --crosswalk-lista: #f7f8fa;
+  /* O passeio da avenida (ADR-0044): mais claro do que o asfalto, que é o da passadeira. */
+  --map-passeio: #6b7079;
+  /* O anel de excesso de velocidade (ADR-0039): vermelho néon, mais saturado do que o da «Falha»; um contorno, nunca um preenchimento. */
+  --speed-excess: #ff3b5c;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg-base: #d9dce1;
+  --bg-card: #eeeff2;
+  --bg-raised: #c9ccd1;
+  --superficie: #ffffff;
+  --border-default: #adb0b5;
+  --text-primary: #121417;
+  --text-secondary: #4e5054;
+  --accent-ink: #0037f2;
+  --state-ok: #146a38;
+  --state-warn: #7a5200;
+  --state-error: #b3261e;
+  --state-device: #9a3c00; /* laranja (ADR-0042): o candidato #b34700 ficava a 2,7:1 da noite; este tem ≥ 3,2:1 nas 3 paletas */
+  --on-state: #ffffff; /* o ícone sobre um fundo de estado: 6,5:1 a 7,4:1 */
+  --nocoverage-line: #70767f;
+  --nocoverage-label: #555b65;
+  --map-bg: #e1e4e9; /* o mapa um tom abaixo dos painéis brancos */
+  --map-water: #b9c5e0;
+  --map-block: #d3d7dd;
+  /* A noite escurece o mapa por baixo dos painéis claros, num cinzento médio (luminância ≥ 0,43): até onde os estados, que são
+     escuros neste tema, ainda têm 3:1 contra o fundo, a água e os quarteirões (ADR-0040). */
+  --map-bg-crepusculo: #c8ccd3;
+  --map-water-crepusculo: #aebcdb;
+  --map-block-crepusculo: #bcc1c9;
+  --map-road-nocoverage-crepusculo: #626872;
+  --map-label-crepusculo: #454b54;
+  --map-bg-noite: #b1b5bc;
+  --map-water-noite: #a9b7d5;
+  --map-block-noite: #adb1b8;
+  --map-road-nocoverage-noite: #50555e;
+  --map-label-noite: #2f343c;
+  --map-sky: #8fb8e8;
+  --map-horizon: #dfe8f2;
+  --map-sky-crepusculo: #6f7fb3;
+  --map-horizon-crepusculo: #f0b48a;
+  --map-sky-noite: #2c3550;
+  --map-horizon-noite: #69728a;
+  --crosswalk-asfalto: #3a3f46;
+  --crosswalk-lista: #f7f8fa;
+  --map-passeio: #b7bbc2;
+  --speed-excess: #b8002e;
+}
+
+/* Derivados: transparências dos mesmos tokens (halos, fundos de selo), para não haver cores soltas nos componentes. */
+:root,
+[data-theme="dark"],
+[data-theme="light"] {
+  --accent-soft: color-mix(in srgb, var(--accent-fill) 22%, transparent);
+  --error-soft: color-mix(in srgb, var(--state-error) 18%, transparent);
+  --device-soft: color-mix(in srgb, var(--state-device) 18%, transparent);
+  --warn-soft: color-mix(in srgb, var(--state-warn) 18%, transparent);
+  --ok-soft: color-mix(in srgb, var(--state-ok) 14%, transparent);
+  --nocoverage-soft: color-mix(in srgb, var(--nocoverage-line) 22%, transparent);
+  --neutral-soft: color-mix(in srgb, var(--text-secondary) 20%, transparent);
+  --overlay: var(--superficie); /* opaco: os painéis sobre o mapa não se confundem com ele */
+  /* Ruas: com sensor de peões a traço forte; sem cobertura a cinzento (ADR-0007). */
+  --map-road-sensor: var(--accent-ink); /* rua com sensor a azul; sem cobertura a cinzento (ADR-0007) */
+  --map-road-nocoverage: var(--nocoverage-line);
+  --map-label: var(--nocoverage-label);
+  --map-label-halo: var(--map-bg);
+  --map-label-halo-crepusculo: var(--map-bg-crepusculo);
+  --map-label-halo-noite: var(--map-bg-noite);
+}

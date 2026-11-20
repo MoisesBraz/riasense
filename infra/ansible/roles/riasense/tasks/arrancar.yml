@@ -1,0 +1,54 @@
+- name: Imagens feitas no controlador (VM sem rede)
+  when: riasense_modo == 'imagens'
+  block:
+    - name: Copiar as imagens
+      ansible.builtin.copy:
+        src: "{{ riasense_imagens_tar }}"
+        dest: "{{ riasense_dir }}/imagens.tar.gz"
+        mode: "0644"
+      register: riasense_imagens
+
+    - name: Carregar as imagens
+      ansible.builtin.shell: set -o pipefail && gunzip -c "{{ riasense_dir }}/imagens.tar.gz" | docker load
+      args:
+        executable: /bin/bash
+      changed_when: true  # carregar imagens muda sempre o daemon
+      when: riasense_imagens.changed  # noqa: no-handler
+
+- name: Compose a correr (constrói só no modo build)
+  ansible.builtin.command: >-
+    docker compose up -d {{ '--build' if riasense_modo == 'build' else '--no-build' }} --remove-orphans
+  args:
+    chdir: "{{ riasense_dir }}"
+  register: riasense_up
+  changed_when: "'Started' in riasense_up.stderr or 'Recreated' in riasense_up.stderr or 'Created' in riasense_up.stderr"
+
+- name: A API responde pela web (/api/ready)
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ riasense_web_porta }}/api/ready"
+    status_code: 200
+  register: riasense_ready
+  until: riasense_ready.status == 200
+  retries: "{{ riasense_espera_tentativas }}"
+  delay: "{{ riasense_espera_segundos }}"
+
+- name: A web responde
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ riasense_web_porta }}/"
+    status_code: 200
+
+- name: O túnel Cloudflare está a correr (se ativado)
+  ansible.builtin.command: docker compose ps --status running -q tunnel
+  args:
+    chdir: "{{ riasense_dir }}"
+  register: riasense_tunnel_status
+  changed_when: false
+  until: (riasense_tunnel_status.stdout | trim | length) > 0
+  retries: 10
+  delay: 6
+  failed_when: (riasense_tunnel_status.stdout | trim | length) == 0
+  when: (riasense_cloudflare_tunnel_token | length) > 0
+
+- name: Demo pronta
+  ansible.builtin.debug:
+    msg: "RiaSense {{ riasense_commit.stdout }} pronta em http://{{ ansible_host | default(inventory_hostname) }}:{{ riasense_web_porta }}/"

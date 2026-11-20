@@ -1,0 +1,17 @@
+# RASCUNHO do índice v0 (decisão de 16/11/2026, wiki «Índice e previsão», Q19).
+# Pressão por zona × hora = média geométrica ponderada dos percentis das
+# componentes, convertida em 5 degraus por quintis. A validar com os mentores
+# no checkpoint de 18/11. Mede EXPOSIÇÃO, não acidentes.
+
+versao: v0
+normalizacao: percentil          # por fonte: visitas e travessias à parte
+combinacao: media_geometrica_ponderada
+pesos:
+  peoes: 0.4                     # visitas (TouristZone) ou travessias (SmartCrosswalk)
+  pesados: 0.4                   # passagens vehicleCategory C (camiões) + D (autocarros)
+  velocidade: 0.2                # velocidade média face ao limite do segmento
+degraus:
+  metodo: quintis
+  n: 5                           # 1 = calmo … 5 = intenso
+horas: {inicio: 7, fim: 20}      # controlo de hora do painel
+tipos_de_dia: [dia_util, sabado, domingo]   # dia útil = média de seg a sex

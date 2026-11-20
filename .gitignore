@@ -1,0 +1,46 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+dist/
+.vite/
+coverage/
+*.log
+
+# Dados brutos e bases locais (os agregados em data/processed/ são versionados)
+data/raw/
+# Tabelas limpas, grandes e regeneráveis (riasense ingerir); partilham-se pelo Nextcloud, não pelo git
+data/interim/
+# CSV da ANEPC de 2016 a 2020 (riasense anepc os descarrega; ADR-0036)
+data/external/
+*.duckdb
+*.duckdb.wal
+
+# Editores
+.idea/
+.vscode/*
+!.vscode/extensions.json
+pipeline/viabilidade/data/
+
+# Cache do `tsc -b`
+*.tsbuildinfo

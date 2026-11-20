@@ -1,0 +1,3767 @@
+/*
+ * Estilos da demo. Só usam as variáveis de tokens.css: nenhuma cor, raio ou tamanho de letra escrito à mão.
+ * Layout do Figma («Regras»): ≥ 1180 mapa + painel de 392; 980–1179 painel de 360; 760–979 painel por baixo;
+ * < 760 móvel, uma coluna, barra da hora fixa em baixo.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font: var(--type-body);
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font: inherit;
+  color: inherit;
+}
+a {
+  color: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── Estrutura ─────────────────────────────────────────────── */
+.app {
+  display: grid;
+  grid-template-rows: var(--topbar-height) minmax(0, 1fr);
+  height: 100dvh;
+}
+.corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--panel-width);
+  gap: var(--space-16);
+  padding: var(--space-16);
+  min-height: 0;
+}
+.area-mapa {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--map-bg);
+}
+.mapa {
+  position: absolute;
+  inset: 0;
+}
+.painel {
+  /* Posicionado: os textos só para leitores de ecrã (absolutos) ficam dentro do painel e não esticam a página. */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: var(--space-4);
+  scrollbar-gutter: stable;
+}
+.painel:focus-visible {
+  outline-offset: -2px;
+}
+
+/* ── Barra superior ────────────────────────────────────────── */
+.barra-superior {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-24);
+  padding: 0 var(--space-24);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-base);
+  z-index: 10;
+}
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-12);
+  font: var(--type-h3);
+  white-space: nowrap;
+}
+.marca__fundo {
+  fill: var(--accent-fill);
+}
+.marca__rua {
+  fill: var(--text-on-accent);
+}
+.marca__bojo {
+  stroke: var(--text-on-accent);
+}
+.separadores {
+  display: flex;
+  gap: var(--space-8);
+}
+.separador {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-16);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font: var(--type-body-strong);
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.separador:hover {
+  color: var(--text-primary);
+}
+.separador[aria-selected="true"] {
+  background: var(--accent-fill);
+  color: var(--text-on-accent);
+}
+.separador__numero {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+  font: var(--type-seal);
+}
+.barra-superior__direita {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  margin-left: auto;
+  color: var(--text-secondary);
+  font: var(--type-small);
+  white-space: nowrap;
+}
+.estado-dados {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font: var(--type-small);
+  cursor: pointer;
+}
+.estado-dados__ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--text-secondary);
+}
+/* ADR-0048, ponto 3: o estado normal é cinzento, com «Offline» à vista; o verde lia-se como «ligado». */
+.estado-dados--offline .estado-dados__ponto {
+  background: var(--text-secondary);
+}
+.estado-dados--erro .estado-dados__ponto {
+  background: var(--state-error);
+}
+.estado-dados--erro {
+  color: var(--state-error);
+}
+.botao-icone {
+  display: inline-grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.botao-icone:hover {
+  color: var(--text-primary);
+}
+.barra-superior__menu {
+  display: none;
+}
+.popover {
+  position: absolute;
+  top: calc(100% + var(--space-8));
+  right: var(--space-16);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  width: 392px;
+  max-width: calc(100vw - var(--space-32));
+  padding: var(--space-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-base);
+  /* Mais alta do que o ecrã (as fontes e licenças cresceram): rola por dentro, em vez de sair pelo fundo. */
+  max-height: calc(100dvh - var(--altura-cabecalho, 64px) - var(--space-16));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.popover__zona {
+  margin: 0;
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+
+/* ── Sobreposições do mapa ─────────────────────────────────── */
+.sobreposto {
+  position: absolute;
+  z-index: 3;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--overlay);
+  color: var(--text-primary);
+}
+/* Camadas e Legenda: do mesmo lado, em cima à esquerda, a Legenda por baixo; fechadas por omissão. */
+.controlos-mapa {
+  position: absolute;
+  z-index: 3;
+  top: var(--space-16);
+  left: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-8);
+  max-height: calc(100% - 160px);
+  overflow-y: auto;
+}
+.recolhivel {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--overlay);
+  color: var(--text-primary);
+  font: var(--type-small);
+}
+/* Fechados, os controlos têm a largura do texto e a mesma altura dos chips e do zoom (40 px); abertos, alargam. */
+.camadas,
+.legenda {
+  width: max-content;
+}
+.recolhivel__corpo {
+  padding: 0 var(--space-12) var(--space-12);
+}
+.camadas__lista,
+.legenda__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.interruptor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  width: 100%;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: var(--type-small);
+  text-align: left;
+  cursor: pointer;
+}
+.interruptor__trilho {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 16px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+}
+.interruptor__trilho::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--text-secondary);
+  transition: transform var(--motion);
+}
+.interruptor[aria-checked="true"] .interruptor__trilho {
+  border-color: var(--accent-fill);
+  background: var(--accent-fill);
+}
+.interruptor[aria-checked="true"] .interruptor__trilho::after {
+  background: var(--text-on-accent);
+  transform: translateX(12px);
+}
+.legenda__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+/* Todos os símbolos da legenda e das camadas cabem na mesma caixa de 16 px, a altura da linha. */
+.legenda__amostra {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+}
+.legenda__amostra {
+  width: 20px;
+  height: 20px;
+}
+.legenda__amostra .marcador {
+  width: 16px;
+  height: 16px;
+  border-width: 1.5px;
+  font: 600 8px/1 var(--font-sans);
+}
+.legenda__amostra .marcador--proximo {
+  width: 10px;
+  height: 10px;
+  border-width: 1.5px;
+  box-shadow: 0 0 0 1.5px var(--bg-card), 0 0 0 3px var(--text-primary);
+  font-size: 0;
+}
+.legenda__amostra .degrau,
+.legenda__degraus .degrau {
+  width: 16px;
+  height: 16px;
+  border-width: 1.5px;
+  font: 600 9px/1 var(--font-sans);
+}
+.legenda__rua {
+  width: 16px;
+  height: 3px;
+  border-radius: var(--radius-pill);
+}
+.legenda__rua--sensor {
+  background: var(--map-road-sensor);
+}
+.legenda__rua--sem-cobertura {
+  height: 2px;
+  background: var(--map-road-nocoverage);
+}
+.legenda__halo-falha {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--state-error);
+  border-radius: var(--radius-pill);
+  background: var(--error-soft);
+}
+.distintivo-amostra .distintivo {
+  width: 22px;
+  height: 22px;
+  border-width: 1.5px;
+  box-shadow: none;
+}
+.distintivo-amostra .distintivo .icone {
+  width: 16px;
+  height: 16px;
+}
+.distintivo-amostra .distintivo__aviso {
+  top: -7px;
+  right: -7px;
+  width: 14px;
+  height: 14px;
+  border-width: 1.5px;
+  font-size: 10px;
+}
+.legenda__halo-previsao {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--text-secondary);
+  border-radius: var(--radius-pill);
+  background: var(--neutral-soft);
+}
+.legenda__risco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.legenda__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.legenda__grupo .legenda__lista {
+  margin: 0;
+}
+.legenda__subtitulo,
+.legenda__extremos,
+.legenda__nota {
+  color: var(--text-secondary);
+}
+.legenda__degraus {
+  display: flex;
+  gap: var(--space-8);
+}
+.legenda__extremos {
+  display: flex;
+  justify-content: space-between;
+}
+.legenda__nota strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.chip-mapa {
+  top: var(--space-16);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  font: var(--type-label);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+/* O selo das figuras estimadas (②) e previstas (③) da vista 3D (ADR-0041, ponto 9): no ③ fica por baixo do chip da previsão. */
+.chip-mapa--segundo {
+  top: calc(var(--space-16) + 52px);
+}
+/* O selo das figuras é longo: num mapa estreito (1024 × 768, com o painel) parte a linha, e não passa por baixo da coluna dos
+   controlos, à esquerda. */
+.chip-mapa--figuras {
+  right: 0;
+  left: 0;
+  width: fit-content;
+  max-width: calc(100% - 192px);
+  margin-inline: auto;
+  flex-wrap: wrap;
+  transform: none;
+  white-space: normal;
+}
+.zoom {
+  top: 50%;
+  right: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(-50%);
+}
+
+/* ── Cursor de tempo ───────────────────────────────────────── */
+.barra-hora {
+  position: absolute;
+  right: var(--space-16);
+  bottom: var(--space-16);
+  left: var(--space-16);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--overlay);
+}
+.barra-hora__reproduzir {
+  flex: none;
+  white-space: nowrap;
+}
+.barra-hora__rotulo {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  min-width: 104px;
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.barra-hora__rotulo strong {
+  color: var(--text-primary);
+  font: var(--type-label);
+  font-weight: 600;
+}
+.barra-hora__faixa {
+  position: relative;
+  flex: 1;
+  height: 40px;
+}
+/* Só no ① Vigiar a faixa cresce para o batimento (ADR-0057); nos outros separadores fica como estava (ADR-0033, ponto 4). */
+.barra-hora--pulso .barra-hora__faixa {
+  height: 58px;
+}
+.barra-hora__escala {
+  position: absolute;
+  inset: 0 8px;
+}
+.barra-hora__trilho {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  left: 0;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--border-default);
+}
+.barra-hora__falha {
+  position: absolute;
+  top: 9px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--state-error);
+}
+/* O «batimento»: os sensores em falha por hora, discreto, entre a linha da hora e os dias; os pontos são onde começam falhas. */
+.barra-hora__pulso {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  overflow: visible;
+}
+.barra-hora__pulso polyline {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.barra-hora__pulso polyline.barra-hora__pulso-rede {
+  stroke: var(--state-error);
+  stroke-width: 1.5;
+  opacity: 1;
+}
+/* Cada batimento é clicável (leva o cursor a essa hora), sem nada desenhado por cima: só a área do clique. */
+.barra-hora__pontos {
+  position: absolute;
+  inset: 0 8px;
+  pointer-events: none;
+}
+.barra-hora__ponto {
+  position: absolute;
+  top: 18px;
+  width: 12px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  transform: translateX(-50%);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.barra-hora__ponto:hover {
+  background: color-mix(in srgb, var(--text-secondary) 14%, transparent);
+}
+.barra-hora__dias {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.barra-hora__dias li {
+  position: absolute;
+  top: 22px;
+  color: var(--text-secondary);
+  font: var(--type-small);
+  transform: translateX(-50%);
+}
+.barra-hora__dias li::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 1px;
+  height: 5px;
+  background: var(--text-secondary);
+}
+.barra-hora__cursor {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+}
+.barra-hora__cursor::-webkit-slider-runnable-track {
+  height: 16px;
+  background: transparent;
+}
+.barra-hora__cursor::-moz-range-track {
+  height: 16px;
+  background: transparent;
+}
+.barra-hora__cursor::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--text-on-accent);
+  border-radius: var(--radius-pill);
+  background: var(--accent-fill);
+  appearance: none;
+}
+.barra-hora__cursor::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--text-on-accent);
+  border-radius: var(--radius-pill);
+  background: var(--accent-fill);
+}
+
+/* ── Marcadores (mapa e legenda) ───────────────────────────── */
+/* O marcador do mapa é o distintivo do tipo (ver «O marcador do sensor e os símbolos do estado», mais abaixo). Aqui ficam
+   o alvo numerado do «próximo sensor» e os marcadores simples dos painéis (o assinalado do gráfico). */
+.marcador {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--text-primary);
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: var(--type-seal);
+}
+.marcador--assinalada {
+  border-color: var(--state-warn);
+  background: var(--state-warn);
+  color: var(--bg-card);
+}
+/* Próximo sensor: um alvo neutro com o número do ranking (ADR-0033, ponto 5). */
+.marcador--proximo {
+  width: 26px;
+  height: 26px;
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 3px var(--bg-card), 0 0 0 5px var(--text-primary);
+  font: var(--type-label);
+  font-weight: 600;
+}
+.marcador-mapa {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+/* Alvo de toque de pelo menos 44 px à volta do distintivo (28 px), sem o mudar (WCAG 2.5.5). */
+.marcador-mapa::before {
+  position: absolute;
+  inset: -8px;
+  content: "";
+}
+.marcador-mapa__halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--raio) * 2);
+  height: calc(var(--raio) * 2);
+  border-radius: var(--radius-pill);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.marcador-mapa__halo--falha {
+  border: 1.5px solid var(--state-error);
+  background: var(--error-soft);
+}
+.marcador-mapa__halo--estimado {
+  background: var(--error-soft);
+}
+.marcador-mapa--falha-dispositivo .marcador-mapa__halo--estimado {
+  background: var(--device-soft);
+}
+/* O halo da previsão é neutro: mostra um valor, não um estado (ADR-0033, ponto 2). */
+.marcador-mapa__halo--previsao {
+  border: 1.5px solid var(--text-secondary);
+  background: var(--neutral-soft);
+}
+.marcador-mapa__rotulo {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 6px);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--overlay);
+  color: var(--text-primary);
+  font: var(--type-label);
+  white-space: nowrap;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.marcador-mapa--rotulo-esquerda .marcador-mapa__rotulo {
+  right: calc(100% + 6px);
+  left: auto;
+}
+.marcador-mapa--selecionado .marcador,
+.marcador-mapa--selecionado .degrau {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 3px;
+}
+.marcador-mapa--tracejado .distintivo {
+  border-style: dashed;
+}
+.mapa--longe .marcador-mapa:not(.marcador-mapa--zona) .marcador-mapa__rotulo {
+  display: none;
+}
+
+/* Degraus do risco potencial: número e contorno, não só cor (os dois primeiros quase não se veem no claro). */
+.degrau {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--text-primary);
+  border-radius: var(--radius-pill);
+  color: var(--risk-ink-light);
+  font: var(--type-body-strong);
+}
+.degrau--1 {
+  background: var(--risk-1);
+}
+.degrau--2 {
+  background: var(--risk-2);
+}
+.degrau--3 {
+  background: var(--risk-3);
+}
+.degrau--4 {
+  background: var(--risk-4);
+  color: var(--risk-ink-dark);
+}
+.degrau--5 {
+  background: var(--risk-5);
+  color: var(--risk-ink-dark);
+}
+.degrau--estimado {
+  border-style: dashed;
+  opacity: 0.75;
+}
+
+/* ── Pop-up do sensor (ADR-0033, ponto 3) ───────────────────── */
+/* Por cima dos marcadores (que têm z-index 1 e 2) e dos halos. */
+.popup-mapa {
+  z-index: 5;
+}
+.popup-mapa .maplibregl-popup-content {
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--bg-base) 60%, transparent);
+}
+.popup-mapa.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.popup-mapa.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.popup-mapa.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--border-default);
+}
+.popup-mapa.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.popup-mapa.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.popup-mapa.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--border-default);
+}
+.popup-mapa.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--border-default);
+}
+.popup-mapa.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--border-default);
+}
+.popup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  /* Largura fixa, e não min(300px, 100%): a percentagem fazia o MapLibre dar ao pop-up uma moldura de 460 px, com o ✕ longe do canto. */
+  width: 300px;
+  max-width: 100%;
+  padding: var(--space-12);
+  color: var(--text-primary);
+  font: var(--type-body);
+}
+/* O pop-up recebe o foco ao abrir só para o teclado continuar lá dentro; a moldura já o delimita. */
+.popup:focus {
+  outline: none;
+}
+/* O cabeçalho do pop-up, em duas linhas: o título completo e o ✕ no canto; por baixo, o tipo e os badges. */
+.popup__cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.popup__titulo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-8);
+}
+.popup__nome {
+  min-width: 0;
+  padding-top: var(--space-2);
+  font: var(--type-body-strong);
+  overflow-wrap: anywhere;
+}
+/* O alvo de toque de 44 px (--touch-min) fica no canto do pop-up e come o enchimento, para não aumentar o cabeçalho. */
+.popup__fechar {
+  margin: calc(-1 * var(--space-12)) calc(-1 * var(--space-12)) calc(-1 * var(--space-24)) 0;
+}
+.popup__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-8);
+}
+.popup__tipo,
+.popup__nota {
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.popup__tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.popup__etiqueta {
+  padding: 0 var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font: var(--type-small);
+  white-space: nowrap;
+}
+.popup__numero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4) var(--space-8);
+  margin: 0;
+}
+.popup__numero strong {
+  font: var(--type-number-lg);
+}
+.popup__numero .popup__nota {
+  flex-basis: 100%;
+}
+.popup__linha,
+.popup__aviso {
+  margin: 0;
+  font: var(--type-small);
+}
+.popup__aviso {
+  padding-left: var(--space-8);
+  border-left: 3px solid var(--state-warn);
+}
+.popup__linha--risco {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+.popup__linha--risco .degrau {
+  flex: none;
+}
+.popup__sensores {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: var(--type-small);
+}
+.popup__sensores li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+.grafico--compacto {
+  max-height: 110px;
+}
+/* O estado do sensor em texto, com a forma do marcador em pequeno. */
+.estado-sensor {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  font: var(--type-label);
+  white-space: nowrap;
+}
+.estado-sensor--ativo {
+  color: var(--state-ok);
+}
+.estado-sensor--atencao {
+  color: var(--state-warn);
+}
+.estado-sensor--falha-rede,
+.estado-sensor--estimado {
+  color: var(--state-error);
+}
+.estado-sensor--falha-dispositivo {
+  color: var(--state-device);
+}
+/* Ecrã estreito: o pop-up abre como uma folha que sobe do fundo. */
+.folha {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.folha__fundo {
+  flex: 1;
+  border: 0;
+  background: color-mix(in srgb, var(--bg-base) 40%, transparent);
+  cursor: default;
+}
+.folha__corpo {
+  max-height: 70vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--border-default);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--bg-card);
+  animation: folha-sobe var(--motion) ease-out;
+}
+.folha__corpo .popup {
+  width: 100%;
+  padding: var(--space-16);
+}
+@keyframes folha-sobe {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* ── Painel ────────────────────────────────────────────────── */
+.pergunta__titulo {
+  margin: 0;
+  font: var(--type-h2);
+}
+.pergunta__linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+.botao-info {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--text-secondary);
+  font: var(--type-h3);
+  cursor: pointer;
+}
+.botao-info:hover,
+.botao-info[aria-expanded="true"] {
+  color: var(--accent-ink);
+}
+.pergunta__info {
+  margin: var(--space-8) 0 0;
+  padding: var(--space-8) var(--space-12);
+  border-left: 3px solid var(--border-default);
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.pergunta__info p {
+  margin: 0;
+}
+.pergunta__info p + p {
+  margin-top: var(--space-8);
+}
+/* Listas dos painéis: cada linha é um botão que centra o mapa e abre o pop-up (ADR-0033, ponto 4). */
+.lista-sensores {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lista-sensores__botao {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-4) var(--space-8);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-primary);
+  font: var(--type-body);
+  text-align: left;
+  cursor: pointer;
+}
+.lista-sensores__botao:hover {
+  background: var(--bg-raised);
+}
+.lista-sensores__botao[aria-pressed="true"] {
+  border-color: var(--accent-ink);
+}
+/* O nome ocupa o que sobra; o valor ou a nota ficam à direita (era a 3.ª coluna da grelha). */
+.lista-sensores__botao > strong {
+  flex: 1;
+  min-width: 0;
+}
+.lista-sensores__posicao {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--text-primary);
+  border-radius: var(--radius-pill);
+  font: var(--type-label);
+}
+.lista-sensores__valor {
+  font: var(--type-body-strong);
+  font-variant-numeric: tabular-nums;
+}
+.lista-sensores__nota {
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.cartao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+.cartao p {
+  margin: 0;
+}
+.cartao--erro {
+  border-color: var(--state-error);
+}
+.cartao--aviso {
+  border-color: var(--state-warn);
+}
+.cartao--ok {
+  border-color: var(--state-ok);
+}
+.cartao__cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+.cartao__titulo {
+  margin: 0;
+  font: var(--type-h3);
+}
+.nota {
+  margin: 0;
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.acoes,
+.linha-selos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-8);
+}
+.kpis--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+.kpi__rotulo,
+.kpi__nota {
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.kpi__valor {
+  font: var(--type-number-lg);
+}
+.selo {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-4) var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font: var(--type-seal);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* O estimado é tracejado e vermelho (ADR-0033, ponto 1); o azul fica para a interface. */
+.selo--estimado {
+  border: 1px dashed var(--state-error);
+  color: var(--state-error);
+}
+.selo--aviso {
+  border-color: var(--state-warn);
+  color: var(--state-warn);
+}
+.selo--erro {
+  border-color: var(--state-error);
+  color: var(--state-error);
+}
+.selo--ok {
+  border-color: var(--state-ok);
+  color: var(--state-ok);
+}
+.tipo-falha {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  font: var(--type-label);
+}
+.tipo-falha--rede {
+  border-color: var(--state-error);
+}
+/* A de dispositivo é magenta (ADR-0033); as duas distinguem-se também pelo símbolo e pelo nome. */
+.tipo-falha--dispositivo {
+  border-color: var(--state-device);
+}
+.botao {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-20);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font: var(--type-body-strong);
+  cursor: pointer;
+}
+.botao--primario {
+  background: var(--accent-fill);
+  color: var(--text-on-accent);
+}
+.botao--secundario {
+  border-color: var(--border-default);
+  background: transparent;
+  color: var(--text-primary);
+}
+.cartao > .botao {
+  align-self: flex-start;
+}
+.botao--fantasma {
+  align-self: flex-start;
+  padding: 0 var(--space-4);
+  background: transparent;
+  color: var(--accent-ink);
+}
+.escolha {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+.escolha__opcao {
+  flex: 1;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  font: var(--type-label);
+  cursor: pointer;
+}
+.escolha__opcao[aria-pressed="true"] {
+  border-color: var(--border-default);
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+.lista-simples {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin: 0;
+  padding-left: var(--space-16);
+  color: var(--text-secondary);
+}
+.componentes,
+.ranking {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.componentes li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+.componentes__texto {
+  display: flex;
+  flex-direction: column;
+}
+.vertical {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.dados-locais {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+.dados-locais__titulo {
+  font: var(--type-h3);
+}
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--type-small);
+}
+.tabela th,
+.tabela td {
+  padding: var(--space-4) var(--space-8);
+  border-bottom: 1px solid var(--border-default);
+  text-align: left;
+  white-space: nowrap;
+}
+.componente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.pontos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ── Estados ───────────────────────────────────────────────── */
+.estado__linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+.estado__titulo {
+  font: var(--type-h3);
+}
+.estado__texto {
+  margin: 0;
+  color: var(--text-secondary);
+}
+.estado--a-carregar,
+.estado--vazio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+.estado--vazio {
+  align-items: center;
+  padding: var(--space-24) var(--space-16);
+  text-align: center;
+}
+.estado__icone--ok {
+  color: var(--state-ok);
+}
+.estado__icone--info {
+  color: var(--text-secondary);
+}
+.estado--erro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+.estado__subtitulo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font: var(--type-h3);
+}
+.estado__subtitulo svg {
+  color: var(--state-error);
+}
+.esqueleto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+.esqueleto__barra {
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  animation: pulsar 1.2s ease-in-out infinite alternate;
+}
+.esqueleto__barra--curta {
+  width: 45%;
+}
+.esqueleto__barra--media {
+  width: 70%;
+}
+@keyframes pulsar {
+  to {
+    opacity: 0.5;
+  }
+}
+.etiqueta-simulacao {
+  margin: 0;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+  color: var(--text-primary);
+  font: var(--type-body-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto__barra,
+  .folha__corpo {
+    animation: none;
+  }
+  * {
+    transition: none !important;
+  }
+}
+.sem-cobertura__amostra {
+  width: 100%;
+  height: 48px;
+}
+.sem-cobertura__amostra path {
+  fill: none;
+  stroke: var(--map-road-nocoverage);
+  stroke-width: 3;
+}
+.sem-cobertura__amostra text {
+  fill: var(--nocoverage-label);
+  font: var(--type-small);
+}
+
+/* ── Gráficos ──────────────────────────────────────────────── */
+.grafico {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.grafico__texto {
+  fill: var(--text-secondary);
+  font: var(--type-small);
+  font-size: 10px;
+}
+.grafico__grelha {
+  stroke: var(--border-default);
+}
+.grafico__fim-de-semana {
+  fill: var(--nocoverage-soft);
+}
+.grafico__intervalo {
+  fill: var(--error-soft);
+}
+.grafico__real,
+.grafico__virtual {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.grafico__real {
+  stroke: var(--text-primary);
+}
+.grafico__virtual {
+  stroke: var(--state-error);
+}
+.grafico__previsao {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+}
+.grafico__falha {
+  stroke: var(--state-error);
+}
+.grafico__cursor {
+  stroke: var(--text-secondary);
+  stroke-dasharray: 2 2;
+}
+.legenda-serie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  color: var(--text-secondary);
+  font: var(--type-small);
+  list-style: none;
+}
+.legenda-serie li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+.legenda-serie__real,
+.legenda-serie__virtual {
+  width: 22px;
+  border-top: 2px solid var(--text-primary);
+}
+.legenda-serie__virtual {
+  border-top: 2px dashed var(--state-error);
+}
+.legenda-serie__intervalo {
+  width: 22px;
+  height: 10px;
+  background: var(--error-soft);
+}
+.grafico-efeito {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--type-small);
+}
+.grafico-efeito__nome {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+.grafico-efeito th {
+  width: 86px;
+  padding: 0;
+  font: var(--type-label);
+  text-align: left;
+}
+.grafico-efeito td {
+  padding: var(--space-4) 0;
+}
+.grafico-efeito svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.grafico-efeito__zero {
+  stroke: var(--border-default);
+  stroke-dasharray: 2 2;
+}
+.grafico-efeito__ic {
+  stroke: var(--text-primary);
+  stroke-width: 1.5;
+}
+.grafico-efeito__ponto {
+  fill: var(--text-primary);
+}
+.grafico-efeito--assinalada .grafico-efeito__ic {
+  stroke: var(--state-warn);
+}
+.grafico-efeito--assinalada .grafico-efeito__ponto {
+  fill: var(--state-warn);
+}
+.grafico-efeito--placebo th,
+.grafico-efeito--placebo .grafico-efeito__valor {
+  color: var(--text-secondary);
+}
+.grafico-efeito--placebo .grafico-efeito__ic {
+  stroke: var(--text-secondary);
+  stroke-dasharray: 3 2;
+}
+.grafico-efeito--placebo .grafico-efeito__ponto {
+  fill: var(--text-secondary);
+}
+.grafico-efeito__valor {
+  width: 52px;
+  padding-left: var(--space-8) !important;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.grafico-efeito__marca {
+  width: 32px;
+  padding-left: var(--space-8) !important; /* «semáforo» não se cola ao valor */
+  white-space: nowrap;
+  text-align: left;
+}
+.grafico-efeito__marca .marcador {
+  width: 20px;
+  height: 20px;
+}
+.grafico-efeito__eixo {
+  position: relative;
+  height: 20px;
+}
+.grafico-efeito__eixo span {
+  position: absolute;
+  top: var(--space-4);
+  color: var(--text-secondary);
+  transform: translateX(-50%);
+}
+.linha-tempo__rotulo--botao {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ── Pontos de quebra ──────────────────────────────────────── */
+@media (max-width: 1179px) {
+  :root {
+    --panel-width: 360px;
+  }
+  /* O «Offline» escrito e o tema fora do grupo da direita (ADR-0048) não cabiam a 1024 px com 24 px entre os blocos. */
+  .barra-superior {
+    gap: var(--space-16);
+  }
+  /* E os separadores um pouco mais justos: a 1024 px sobra margem para outra fonte. */
+  .separador {
+    padding: 0 var(--space-12);
+  }
+}
+/* Entre 760 e 1023 px, o cabeçalho cabia só com 1021 px e a página toda alargava. Fica só o «R» da marca (o nome
+   continua para o leitor de ecrã), e o «Simular falha» sai da barra: abre-se na janela do indicador, como no telemóvel. */
+@media (max-width: 1023px) and (min-width: 760px) {
+  .marca__nome {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .barra-superior__direita .botao-agora {
+    display: none;
+  }
+}
+@media (max-width: 979px) and (min-width: 760px) {
+  .app {
+    height: auto;
+    min-height: 100dvh;
+  }
+  .corpo {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 560px auto;
+  }
+  .painel {
+    overflow: visible;
+  }
+}
+@media (max-width: 759px) {
+  /* A coluna nunca fica mais larga do que o ecrã: sem isto, a lista das falhas aberta esticava a página (461 px a 390). */
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
+    min-height: 100dvh;
+  }
+  .barra-superior {
+    flex-wrap: wrap;
+    gap: var(--space-12);
+    padding: var(--space-12) var(--space-16) var(--space-12);
+  }
+  .barra-superior__direita {
+    display: none;
+  }
+  .barra-superior__menu {
+    display: inline-grid;
+  }
+  /* O tema fica ao lado do ☰ (ADR-0048, ponto 4). */
+  .barra-superior__tema {
+    margin-left: auto;
+  }
+  .separadores {
+    order: 3;
+    width: 100%;
+    gap: var(--space-4);
+  }
+  .separador {
+    flex: 1;
+    justify-content: center;
+    padding: 0 var(--space-4);
+    font: var(--type-label);
+  }
+  .separador__numero {
+    display: none;
+  }
+  .corpo {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-16) var(--space-16) 112px;
+  }
+  .area-mapa {
+    flex: none;
+    height: 240px;
+  }
+  .painel {
+    overflow: visible;
+    padding-right: 0;
+  }
+  .controlos-mapa {
+    top: var(--space-8);
+    left: var(--space-8);
+    max-width: 62%;
+    max-height: calc(100% - 48px); /* deixa a atribuição do OpenStreetMap à vista; a legenda comprida desliza */
+  }
+  .camadas,
+  .legenda {
+    width: auto;
+    min-width: 132px;
+  }
+  .chip-mapa,
+  .zoom {
+    display: none;
+  }
+  .barra-hora {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-width: 1px 0 0;
+    border-radius: 0;
+    padding: var(--space-12) var(--space-16) 28px;
+    background: var(--bg-card);
+  }
+  .barra-hora__rotulo {
+    min-width: 88px;
+  }
+  .popover {
+    right: var(--space-16);
+    left: var(--space-16);
+    width: auto;
+  }
+}
+@media (max-width: 380px) {
+  .kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── ① Vigiar: mapa primeiro, detalhe a pedido ─────────── */
+.corpo--sem-painel {
+  grid-template-columns: minmax(0, 1fr);
+}
+.detalhe__cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+/* O ✕ do cabeçalho («Fechar a lista» no ①, «Fechar o painel» do ② ao ④) não encolhe: o alvo fica com 44 × 44 px. */
+.detalhe__cabecalho > .botao-icone {
+  flex: none;
+}
+.detalhe__subtitulo {
+  margin: 0;
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.lista-falhas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lista-falhas__linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-8);
+  width: 100%;
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+.lista-falhas__linha:hover {
+  background: var(--bg-raised);
+}
+/* O ícone do tipo, o nome com o tipo e o dia por baixo e, à direita, o estado: se o painel for estreito, o estado passa para baixo em vez de tapar o texto. */
+.lista-falhas__texto {
+  display: flex;
+  flex: 1 1 6.5rem;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lista-falhas__linha > :last-child:not(.lista-falhas__texto) {
+  margin-left: auto;
+}
+/* A ordem de intervenção (ADR-0053), «1.º» a «38.º», antes do nome. */
+.lista-falhas__ordem {
+  font-variant-numeric: tabular-nums;
+}
+.lista-falhas__nome {
+  font: var(--type-body-strong);
+}
+/* O tipo e o dia na mesma linha, por baixo do nome, que quebra se faltar largura. */
+.lista-falhas__detalhe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-8);
+}
+.lista-falhas__tipo {
+  font: var(--type-small);
+}
+.lista-falhas__quando {
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+
+/* ── ① Vigiar: a fita dos sensores e o movimento ───────── */
+:root {
+  --barra-rotulo: 168px;
+}
+.barra-hora__rotulo {
+  width: var(--barra-rotulo);
+}
+.fita {
+  display: flex;
+  flex-basis: 100%;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.fita__linha {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+.fita__nome {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  width: var(--barra-rotulo);
+  font: var(--type-label);
+  line-height: 1;
+}
+/* A faixa tem o mesmo recuo da escala do cursor (8 px de cada lado): cada barra fica sobre a sua hora. */
+.fita__faixa {
+  position: relative;
+  flex: 1;
+  height: 20px;
+  margin: 0 8px;
+  border-bottom: 1px solid var(--border-default);
+}
+.fita__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--text-secondary);
+  font: var(--type-small);
+  line-height: 1;
+}
+.fita__ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--state-ok);
+}
+.fita__estado--falha {
+  color: var(--state-error);
+}
+.fita__estado--falha .fita__ponto {
+  border-radius: 1px;
+  background: var(--state-error);
+}
+/* Movimento: o sensor a comunicar pulsa, na fita e no mapa; parado com «reduzir movimento». */
+@keyframes pulso {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--state-ok) 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+.fita__estado--ativo .fita__ponto {
+  animation: pulso 1.6s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fita__estado--ativo .fita__ponto {
+    animation: none;
+  }
+}
+
+/* ── Modo «agora»: no próprio mapa, sem caixas nem listas ── */
+.faixa-agora {
+  top: var(--space-16);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  max-width: calc(100% - 420px);
+  min-height: 40px;
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-12);
+  border-color: var(--state-warn);
+  transform: translateX(-50%);
+}
+.faixa-agora .etiqueta-simulacao {
+  margin: 0;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+  font: var(--type-small);
+  line-height: 1.2;
+}
+.faixa-agora__relogio {
+  font: var(--type-label);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Com a folha do detalhe aberta (ecrã estreito), o aviso sai: a folha diz o mesmo, e assim não fica tapado a meio. */
+.area-mapa:has(.folha) .avisos-agora {
+  display: none;
+}
+.avisos-agora {
+  position: absolute;
+  right: var(--space-16);
+  bottom: var(--space-16);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  max-width: 360px;
+}
+.aviso-agora {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-12);
+  border: 1px solid var(--state-warn);
+  border-radius: var(--radius-md);
+  background: var(--overlay);
+  color: var(--text-primary);
+  font: var(--type-small);
+  text-align: left;
+  cursor: pointer;
+  animation: entrar 0.3s ease-out;
+}
+.aviso-agora__titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+.aviso-agora strong {
+  color: var(--state-warn);
+  font: var(--type-label);
+  font-weight: 700;
+}
+.aviso-agora--falha {
+  border-color: var(--state-error);
+}
+.aviso-agora--falha strong {
+  color: var(--state-error);
+}
+.aviso-agora__nota {
+  color: var(--text-secondary);
+}
+.detalhe-agora {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-12); /* é o conteúdo do pop-up do mapa, que não tem margem própria */
+}
+.detalhe-agora__nome {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+.detalhe-agora__titulo {
+  margin: 0;
+  font: var(--type-h2);
+}
+.detalhe-agora__numero {
+  margin: 0;
+}
+.detalhe-agora__numero strong {
+  font: var(--type-number-md);
+}
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes piscar {
+  50% {
+    opacity: 0.35;
+  }
+}
+/* O «sem comunicação» pisca a âmbar no mapa; a falha fica vermelha e parada. */
+.area-mapa--agora .distintivo--atencao {
+  animation: piscar 1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aviso-agora,
+  .area-mapa--agora .distintivo--atencao {
+    animation: none;
+  }
+}
+
+/* ════ Sistema único sobre o mapa ════
+   - uma só família de ícones (Icone.tsx): grelha de 24, traço de 1,6, 20 px;
+   - uma só superfície para tudo o que está por cima do mapa: o mesmo fundo, borda, raio de 12 e sombra;
+   - ferramentas de 40 px em barras verticais, com o painel a abrir ao lado;
+   - a mesma grelha de 4 px nos espaços, e algarismos alinhados nos números. */
+:root {
+  --raio-sobreposto: 12px;
+  --raio-ferramenta: 8px;
+  --sombra-sobreposto: 0 6px 20px rgb(0 0 0 / 0.18);
+  --ferramenta: 40px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sombra-sobreposto: 0 8px 24px rgb(0 0 0 / 0.45);
+  }
+}
+[data-theme="dark"] {
+  --sombra-sobreposto: 0 8px 24px rgb(0 0 0 / 0.45);
+}
+.icone {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sobreposto,
+.controlos-mapa,
+.barra-hora {
+  border: 1px solid var(--border-default);
+  border-radius: var(--raio-sobreposto);
+  background: var(--overlay);
+  box-shadow: var(--sombra-sobreposto);
+  backdrop-filter: blur(8px);
+}
+.titulo-grupo {
+  margin: 0 0 var(--space-8);
+  color: var(--text-secondary);
+  font: var(--type-small);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+/* Ferramentas: o mesmo botão de 40 px nas camadas, na legenda e no zoom. */
+.ferramenta {
+  display: grid;
+  place-items: center;
+  width: var(--ferramenta);
+  height: var(--ferramenta);
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-ferramenta);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color var(--motion), color var(--motion);
+}
+.ferramenta:hover {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+.ferramenta[aria-expanded="true"] {
+  background: var(--text-primary);
+  color: var(--bg-base);
+}
+.ferramenta:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+.controlos-mapa,
+.zoom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+.controlos-mapa {
+  overflow: visible;
+}
+.recolhivel,
+.camadas,
+.legenda {
+  position: relative;
+  width: auto;
+  border: 0;
+  background: none;
+}
+.recolhivel__corpo {
+  position: absolute;
+  top: calc(-1 * var(--space-4) - 1px);
+  left: calc(var(--ferramenta) + var(--space-16));
+  width: 264px;
+  max-height: 70vh; /* a legenda ganhou os 5 tipos e a frase do fundo do mapa */
+  overflow-y: auto;
+  padding: var(--space-12) var(--space-16);
+}
+/* A barra da hora e a fita: a mesma coluna de nomes, a mesma escala, o mesmo texto. */
+.barra-hora {
+  padding: var(--space-12) var(--space-16);
+}
+.barra-hora__rotulo,
+.fita__nome {
+  font: var(--type-small);
+}
+.fita__nome {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.fita__estado,
+.fita__estado--falha {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+.fita__estado--falha .fita__ponto {
+  border-radius: 50%;
+}
+.barra-hora__dias li,
+.faixa-agora__relogio,
+.aviso-agora {
+  font-variant-numeric: tabular-nums;
+}
+.faixa-agora,
+.aviso-agora {
+  border-radius: var(--raio-sobreposto);
+  box-shadow: var(--sombra-sobreposto);
+}
+
+/* ════ Afinação com a skill ui-ux-pro-max: escala tipográfica 12·14·16·18·24·32, alvos de 44 px, 8 px entre alvos ════ */
+:root {
+  --ferramenta: 44px;
+  --barra-rotulo: 184px;
+  --painel-ferramenta: 300px;
+}
+/* As camadas e a legenda abrem no mesmo sítio, com o mesmo tamanho: ancoradas no topo da barra de ferramentas. */
+.controlos-mapa {
+  gap: var(--space-8);
+}
+.recolhivel {
+  position: static;
+}
+.recolhivel__corpo {
+  top: 0;
+  left: calc(100% + var(--space-12));
+  width: var(--painel-ferramenta);
+  min-height: 300px;
+  padding: var(--space-16);
+  font: var(--type-body);
+}
+.legenda__lista,
+.camadas__lista {
+  font: var(--type-body);
+}
+.fita__nome,
+.barra-hora__rotulo {
+  font: var(--type-label);
+}
+.barra-hora__rotulo strong {
+  font: var(--type-body-strong);
+}
+.fita__estado {
+  font: var(--type-small);
+}
+.fita__faixa {
+  height: 24px;
+}
+.barra-hora__dias li {
+  font: var(--type-small);
+}
+
+/* ════ ① Vigiar: indicadores e linha do tempo ════ */
+/* A linha do tempo: faixas de calor, uma célula por hora, alinhadas com o cursor. */
+.fita {
+  gap: var(--space-4);
+}
+.fita__legenda {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-left: auto;
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.fita__amostra {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.fita__amostra--ok {
+  background: var(--state-ok);
+}
+.fita__amostra--falha {
+  margin-left: var(--space-8);
+  background: var(--state-error);
+}
+.fita__titulo {
+  display: flex;
+  flex-direction: column;
+  font: var(--type-label);
+  font-weight: 600;
+  line-height: 1.15;
+}
+.fita__titulo small {
+  color: var(--text-secondary);
+  font: var(--type-seal);
+  font-weight: 400;
+}
+.fita__faixa {
+  height: 28px;
+  border: 0;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--text-secondary) 10%, transparent);
+  overflow: hidden;
+}
+.fita__celula {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+}
+.fita__celula--ok {
+  background: var(--state-ok);
+}
+.fita__celula--falha {
+  background: var(--state-error);
+}
+.fita__celula--agora {
+  z-index: 1;
+  outline: 2px solid var(--text-primary);
+  opacity: 1 !important;
+}
+
+/* Afinação: a coluna dos nomes cabe «Estacionamento» com o estado; faixas mais baixas para tapar menos o mapa. */
+:root {
+  --barra-rotulo: 216px;
+}
+.fita__faixa {
+  height: 22px;
+}
+
+/* Os indicadores do ① Vigiar são o Kpi do template (o mesmo dos painéis), em botão, por cima do mapa. */
+.indicadores {
+  position: absolute;
+  z-index: 3;
+  top: var(--space-16);
+  left: 50%;
+  grid-template-columns: repeat(3, 184px);
+  gap: var(--space-8);
+  transform: translateX(-50%);
+}
+.kpi--botao {
+  background: var(--overlay);
+  box-shadow: var(--sombra-sobreposto);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--motion);
+}
+.kpi--botao:hover {
+  border-color: var(--text-secondary);
+}
+.kpi--botao[aria-pressed="true"] {
+  border-color: var(--accent-ink);
+}
+.kpi--botao:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+.kpi--erro .kpi__valor {
+  color: var(--state-error);
+}
+.kpi--aviso .kpi__valor {
+  color: var(--state-warn);
+}
+.kpi--dispositivo .kpi__valor {
+  color: var(--state-device);
+}
+/* Os chips das falhas levam o símbolo da falha ao lado do nome, o mesmo do marcador e da legenda. */
+.kpi__rotulo--com-simbolo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* As notas dos indicadores ficam numa linha: os três cartões têm sempre a mesma altura. */
+.indicadores .kpi__nota {
+  white-space: nowrap;
+}
+/* O «ⓘ» ao lado dos 3 cartões, com as ressalvas do mapa à vista sem abrir a lista. A nota abre por baixo
+   dos cartões, com a largura deles e o fundo dos sobrepostos. Com a lista aberta, o «ⓘ» tem uma coluna depois dos cartões. */
+.indicadores__botao-info {
+  align-self: start;
+  background: var(--overlay);
+  box-shadow: var(--sombra-sobreposto);
+}
+/* Sem a lista, os cartões estão centrados: o «ⓘ» fica fora da grelha, à direita, e não os empurra para cima dos botões do
+   mapa (a 760 px tapava-os). */
+@media (min-width: 760px) {
+  .corpo--sem-painel .indicadores__botao-info {
+    position: absolute;
+    top: 0;
+    left: calc(100% + var(--space-8));
+  }
+}
+.indicadores__info {
+  position: absolute;
+  top: calc(100% + var(--space-8));
+  right: 0;
+  left: 0;
+  margin: 0;
+  border-radius: var(--radius-md);
+  background: var(--overlay);
+  box-shadow: var(--sombra-sobreposto);
+}
+/* Com a nota aberta, os cartões sobem acima da atribuição do mapa (que vem depois e também tem z-index 3). */
+.indicadores:has(> .indicadores__info) {
+  z-index: 4;
+}
+
+/* ════ Ajustes: os painéis com a altura do conteúdo; a faixa «agora» como cartão ════ */
+/* As camadas e a legenda têm a mesma largura, mas cada uma a altura do que mostra (sem espaço vazio). */
+.recolhivel__corpo {
+  min-height: 0;
+}
+/* A faixa do modo «agora» é um cartão Kpi, com a altura dos indicadores que substitui (110 px) e o topo alinhado
+   com a barra de ferramentas; o botão fica numa linha. */
+.faixa-agora {
+  position: absolute;
+  z-index: 3;
+  top: var(--space-16);
+  left: 50%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-16);
+  width: min(640px, calc(100% - 240px));
+  min-height: 110px;
+  max-width: none;
+  padding: var(--space-12) var(--space-16);
+  border-color: var(--state-warn);
+  background: var(--overlay);
+  box-shadow: var(--sombra-sobreposto);
+  transform: translateX(-50%);
+}
+.faixa-agora__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.faixa-agora__relogio {
+  font: var(--type-h3);
+  font-variant-numeric: tabular-nums;
+}
+.faixa-agora .etiqueta-simulacao {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+  font: var(--type-small);
+}
+.faixa-agora__acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+.faixa-agora__acoes .botao {
+  white-space: nowrap;
+}
+
+.faixa-agora {
+  width: min(760px, calc(100% - 200px));
+  row-gap: var(--space-8);
+}
+.faixa-agora .etiqueta-simulacao {
+  grid-column: 1 / -1;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ════ Planos separados ════
+   O mapa fica recuado (um tom abaixo) e os painéis por cima, opacos e com sombra: não se confundem com as ruas. */
+.sobreposto,
+.controlos-mapa,
+.kpi--botao,
+.faixa-agora {
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 10px 28px rgb(0 0 0 / 0.35);
+}
+/* A barra da hora e a linha do tempo acopladas à base do mapa, como uma gaveta: a toda a largura, encostadas ao fundo,
+   com uma borda em cima. Deixam de flutuar por cima das ruas. */
+.barra-hora {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-width: 1px 0 0;
+  border-radius: 0;
+  box-shadow: 0 -10px 28px rgb(0 0 0 / 0.3);
+}
+
+/* ════ Um só sítio para o detalhe ════ */
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+/* A linha do tempo na barra lateral: um cartão com a legenda, as faixas e os dias por baixo. */
+.linha-tempo-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-top: var(--space-16);
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+.linha-tempo-cartao__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.linha-tempo-cartao__cabecalho .titulo-grupo {
+  margin: 0;
+}
+.linha-tempo-cartao .fita__legenda {
+  margin-left: 0;
+}
+.linha-tempo-cartao .fita__linha {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  align-items: center;
+  gap: var(--space-8);
+}
+.linha-tempo-cartao .fita__nome {
+  width: auto;
+}
+.linha-tempo-cartao .fita__faixa {
+  margin: 0;
+}
+.fita--uma .fita__faixa {
+  height: 32px;
+}
+.fita__dias {
+  position: relative;
+  height: 16px;
+  margin-left: 120px;
+  color: var(--text-secondary);
+  font: var(--type-seal);
+}
+.fita--uma ~ .fita__dias {
+  margin-left: 0;
+}
+.fita__dias span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Uma só faixa (um sensor): ocupa a largura toda do cartão. Na RSU, a coluna dos nomes cabe «Estacionamento». */
+.fita--uma .fita__faixa {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+/* A coluna dos nomes cabe o ícone do tipo com o símbolo da falha e «Estacionamento». */
+.linha-tempo-cartao .fita__linha {
+  grid-template-columns: 164px 1fr;
+}
+.fita__dias {
+  margin-left: 144px;
+}
+.linha-tempo-cartao__cabecalho {
+  gap: var(--space-8);
+}
+.linha-tempo-cartao .fita__legenda {
+  white-space: nowrap;
+}
+
+.linha-tempo-cartao .fita--uma .fita__faixa {
+  height: 32px;
+  min-height: 32px;
+}
+
+.linha-tempo-cartao .fita__dias {
+  margin-left: 0;
+}
+
+/* ════ O marcador do sensor e os símbolos do estado (ADR-0033) ════
+   O distintivo traz o ícone do TIPO (passadeira, zona, RSU) em todos os separadores. O estado vê-se na cor e no tratamento:
+   cheio (ativo), oco (atenção), tracejado (estimado) e, nas falhas, o símbolo da falha no canto: o círculo vermelho do
+   sinal cortado (de rede) e o quadrado magenta do aparelho com aviso (de dispositivo). Os mesmos símbolos estão na
+   legenda, no pop-up, nos chips e na lista. O ícone leva `--on-state` sobre o fundo (≥ 6,5:1 nos dois temas). */
+.distintivo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--superficie);
+  border-radius: var(--radius-sm);
+  background: var(--state-ok);
+  color: var(--on-state);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
+}
+.distintivo .icone {
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+/* Oco: o fundo do cartão e o contorno âmbar, para não ser só a cor que o separa do ativo. */
+.distintivo--atencao {
+  border: 3px solid var(--state-warn);
+  background: var(--superficie);
+  color: var(--state-warn);
+}
+.distintivo--falha-rede,
+.distintivo--rsu-falha {
+  background: var(--state-error);
+}
+.distintivo--falha-dispositivo {
+  background: var(--state-device);
+}
+/* Estimado: tracejado, na cor da falha que o sensor virtual preenche (ADR-0033). */
+.distintivo--estimado {
+  border: 2px dashed var(--state-error);
+  background: var(--superficie);
+  color: var(--state-error);
+}
+.distintivo--estimado-dispositivo {
+  border-color: var(--state-device);
+  color: var(--state-device);
+}
+/* Fora do Vigiar e do Completar o marcador não diz a saúde: é neutro (ADR-0033, ponto 2). */
+.distintivo--neutro {
+  border-color: var(--text-primary);
+  background: var(--superficie);
+  color: var(--text-primary);
+}
+.distintivo--rsu {
+  background: var(--accent-ink);
+}
+.distintivo--assinalada {
+  background: var(--state-warn);
+}
+.marcador-mapa--tipo-rsu .distintivo {
+  width: 32px;
+  height: 32px;
+}
+.distintivo__estado {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  box-shadow: 0 0 0 2px var(--superficie);
+}
+.distintivo__aviso {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--state-warn);
+  border-radius: var(--radius-pill);
+  background: var(--superficie);
+  color: var(--state-warn);
+  font: 700 12px/1 var(--font-sans);
+}
+.marcador-mapa--selecionado .distintivo {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+/* Os símbolos do estado, do tamanho dos ícones (20 px, com o ícone a 16 px): o mesmo desenho no mapa, na legenda, no
+   pop-up, nos chips e na lista. */
+.simbolo-estado {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  color: var(--on-state);
+}
+.simbolo-estado .icone {
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.simbolo-estado--ativo {
+  background: var(--state-ok);
+}
+.simbolo-estado--atencao {
+  border: 3px solid var(--state-warn);
+}
+.simbolo-estado--estimado {
+  border: 2px dashed var(--state-error);
+}
+.simbolo-estado--estimado-dispositivo {
+  border-color: var(--state-device);
+}
+.simbolo-estado--falha-rede {
+  background: var(--state-error);
+}
+.simbolo-estado--falha-dispositivo {
+  border-radius: 5px;
+  background: var(--state-device);
+}
+/* O nome só nas passadeiras da zona e na RSU; nos outros, ao passar o rato ou selecionado (como no Living Lab). */
+.marcador-mapa--nome-a-pedido:not(.marcador-mapa--zona) .marcador-mapa__rotulo {
+  display: none;
+}
+.marcador-mapa--nome-a-pedido:hover .marcador-mapa__rotulo,
+.marcador-mapa--nome-a-pedido:focus-visible .marcador-mapa__rotulo,
+.marcador-mapa--nome-a-pedido.marcador-mapa--selecionado .marcador-mapa__rotulo {
+  display: block;
+}
+.marcador-mapa--vivo .distintivo {
+  animation: pulso 1.6s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marcador-mapa--vivo .distintivo {
+    animation: none;
+  }
+}
+/* O marcador do risco: o ícone do tipo e o número do degrau, lado a lado. */
+.degrau--com-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: auto;
+  min-width: 28px;
+  padding: 0 var(--space-8) 0 var(--space-4);
+  border-radius: var(--radius-pill);
+}
+.degrau--com-icone .icone {
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.degrau__nivel {
+  min-width: 10px;
+  text-align: center;
+}
+/* O pop-up do Vigiar: o detalhe e a linha do tempo, numa largura que cabe a fita da RSU. */
+.detalhe-mapa {
+  display: flex;
+  flex-direction: column;
+  width: min(456px, 86vw);
+  max-height: min(62vh, 560px);
+  overflow-y: auto;
+}
+.detalhe-mapa .popup {
+  width: auto;
+}
+.detalhe-mapa .acoes {
+  padding: 0 var(--space-12);
+}
+.detalhe-mapa .linha-tempo-cartao {
+  margin: var(--space-8) var(--space-12) var(--space-12);
+}
+/* A triagem para o IT (ADR-0053): a sugestão, o botão que copia o `Alert` NGSI-LD e, sem área de transferência, o texto. */
+.detalhe-mapa .triagem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: 0 var(--space-12);
+}
+.triagem .popup__linha,
+.triagem .popup__nota {
+  margin: 0;
+}
+.triagem__copiar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+.triagem__estado {
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.triagem__texto {
+  width: 100%;
+  padding: var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: var(--type-small);
+  font-family: ui-monospace, monospace;
+  resize: vertical;
+}
+.barra-hora__reproducao {
+  color: var(--accent-ink);
+  font: var(--type-small);
+}
+/* «Reproduzir» e «Pausar» ocupam o mesmo espaço: o cursor não salta quando o texto muda. */
+.barra-hora__reproduzir {
+  min-width: 140px; /* com folga: o «▶ Reproduzir» ocupa 131 px no Chromium do macOS */
+  justify-content: center;
+}
+/* O rótulo da hora tem largura fixa: a frase da reprodução parte em duas linhas e não encolhe a faixa. */
+.barra-hora__rotulo {
+  width: 176px;
+}
+/* Ecrã estreito: o botão e a hora (com a frase da reprodução) numa linha, e a faixa da hora inteira na
+   linha de baixo. A frase continua dentro do <label> do cursor (ADR-0029, ponto 3) e já não encolhe a faixa. */
+@media (max-width: 759px) {
+  .barra-hora {
+    flex-wrap: wrap;
+    row-gap: var(--space-8);
+  }
+  .barra-hora__rotulo {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .barra-hora__faixa {
+    flex-basis: 100%;
+  }
+  /* A barra em duas linhas tem até 169 px a reproduzir: o fim do painel fica acima dela. */
+  .corpo {
+    padding-bottom: 184px;
+  }
+}
+
+/* ════ ① Vigiar no telemóvel ════ */
+@media (max-width: 759px) {
+  /* O cabeçalho tem a altura do conteúdo; o mapa fica com o resto, até à barra da hora. */
+  .app {
+    grid-template-rows: auto 1fr;
+  }
+  .corpo--sem-painel {
+    padding-bottom: calc(var(--altura-barra-hora, 89px) + var(--space-16));
+  }
+  .corpo--sem-painel .area-mapa {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 360px;
+  }
+  /* Os 3 cartões numa linha própria, por baixo das Camadas e da Legenda: não tapam os botões. */
+  .indicadores {
+    top: 120px;
+    right: var(--space-8);
+    left: var(--space-8);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    transform: none;
+  }
+  .indicadores .kpi {
+    min-width: 0;
+    padding: var(--space-8);
+  }
+  /* A nota sai no telemóvel (continua no nome acessível do botão): os cartões ficam baixos. */
+  .indicadores .kpi__nota {
+    display: none;
+  }
+  /* O «ⓘ» não tira largura aos 3 cartões: fica por cima deles, à direita, no canto do mapa que os botões não usam. */
+  .indicadores__botao-info {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + var(--space-8));
+  }
+  /* A faixa do «agora» fica no lugar dos 3 cartões, com a etiqueta inteira (ADR-0032, ponto 5). */
+  .faixa-agora {
+    top: 120px;
+    right: var(--space-8);
+    left: var(--space-8);
+    width: auto;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-4);
+    padding: var(--space-8) var(--space-12);
+    transform: none;
+  }
+  /* Acaba antes do zoom (253 px do topo do mapa): o «Agora» e a hora numa linha, a etiqueta em letra pequena. */
+  .faixa-agora__corpo {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-8);
+  }
+  .faixa-agora__relogio {
+    font: var(--type-label);
+  }
+  .faixa-agora .etiqueta-simulacao {
+    font: var(--type-seal);
+    white-space: normal;
+  }
+  .faixa-agora__acoes {
+    flex-wrap: wrap;
+  }
+  /* O cabeçalho fica acima do fundo da folha: tocar num separador muda de separador (e fecha a folha) à primeira. */
+  .barra-superior {
+    position: relative;
+    z-index: 31;
+  }
+  /* A folha do detalhe sobe até à barra da hora, que fica à vista e por baixo dela. */
+  .folha {
+    top: var(--altura-cabecalho, 0px);
+    bottom: var(--altura-barra-hora, 0px);
+  }
+  /* Entre o cabeçalho e a barra da hora: em ecrãs baixos, o topo (o nome e o ✕) fica sempre à vista. */
+  .folha__corpo {
+    max-height: 100%;
+  }
+  .folha__corpo .detalhe-mapa {
+    width: 100%;
+    max-height: none;
+  }
+}
+
+/* No ecrã largo o «Agora» está na barra: o do menu dos dados locais seria um segundo botão igual. Abaixo de
+   1024 px, a barra já não o tem, e o da janela fica. */
+@media (min-width: 1024px) {
+  .popover .botao-agora {
+    display: none;
+  }
+}
+
+/* A amostra da camada «Trânsito» na legenda (ADR-0034): o ponto neutro dos carros. */
+.legenda__carro {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--map-bg);
+  border-radius: 50%;
+  background: var(--text-primary);
+}
+
+/* ════ O ícone do tipo antes do nome, em cada linha dos painéis ════
+   O mesmo distintivo do marcador do mapa (22 px, o ícone a 16 px), neutro ou com o estado. O símbolo da falha sai 10 px do
+   canto de cima, à direita: a margem à direita deixa-o lugar sem tapar o nome. O segmento e o estacionamento, que não têm
+   marcador, levam o ícone da legenda (dois nós ligados por um traço, e o «P»). */
+.icone-tipo {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+/* O símbolo da falha das linhas tem 16 px (e não 20) e sai 12 px do canto do ícone: não tapa os nós do ícone do segmento nem o «P». */
+.icone-tipo .distintivo__estado {
+  top: -12px;
+  right: -12px;
+  width: 16px;
+  height: 16px;
+}
+.icone-tipo .distintivo__estado svg {
+  width: 12px;
+  height: 12px;
+}
+/* O símbolo sai 12 px do canto, mais 2 de contorno: a margem leva-o a 5 px do nome (onde há espaço entre elementos, desconta-se esse espaço). */
+.icone-tipo--com-simbolo {
+  margin-right: 19px;
+}
+.lista-falhas__linha .icone-tipo--com-simbolo,
+.aviso-agora__titulo .icone-tipo--com-simbolo {
+  margin-right: 11px;
+}
+.detalhe-agora__nome .icone-tipo--com-simbolo {
+  margin-right: 7px;
+}
+/* Com falhas de rede e de dispositivo ao mesmo tempo (os segmentos da RSU), o segundo símbolo vai para o lado, mais abaixo: não toca no da linha seguinte. */
+.icone-tipo .distintivo__estado--baixo {
+  top: auto;
+  bottom: -2px;
+}
+.icone-tipo .distintivo-amostra {
+  display: inline-flex;
+}
+.titulo-com-icone {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+.popup__nomes {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4) var(--space-8);
+}
+.popup__grupo {
+  display: inline-flex;
+  align-items: flex-start; /* com os nomes em várias linhas, o ícone fica na 1.ª e não a meio */
+  gap: var(--space-4);
+}
+.fita__nome .icone-tipo {
+  margin-right: var(--space-8);
+}
+.fita__nome .icone-tipo--com-simbolo {
+  margin-right: 19px;
+}
+
+/* ── Com a lista das falhas aberta, os indicadores não tapam as camadas nem a legenda ── */
+/* A faixa deixa de estar centrada e começa depois da coluna de botões do mapa; abertas, as camadas e a legenda ficam por cima dela. */
+@media (min-width: 760px) {
+  .corpo:not(.corpo--sem-painel) .indicadores {
+    right: var(--space-16);
+    left: calc(var(--space-16) + var(--ferramenta) + 2 * var(--space-4) + var(--space-12));
+    grid-template-columns: repeat(3, minmax(0, 184px)) auto;
+    transform: none;
+  }
+}
+.controlos-mapa {
+  z-index: 4;
+}
+
+/* A escala dos dias da fita com nomes (a da RSU) mostra um dia sim, um dia não, em todas as larguras: a faixa ficou mais estreita
+   com o ícone do tipo e as datas colavam-se. */
+.linha-tempo-cartao .fita__linha .fita__dias span:nth-child(even) {
+  display: none;
+}
+
+/* ── A 390 px, com a lista das falhas aberta, os indicadores não tapam os controlos e a legenda não é cortada ── */
+@media (max-width: 759px) {
+  /* Os botões do mapa ocupam só a coluna deles (tinham 132 px de largura mínima, dos tempos em que levavam o nome): a legenda
+     abre ao lado, dentro do mapa, e cabe nos 358 px dele. */
+  .camadas,
+  .legenda {
+    min-width: 0;
+  }
+  /* O painel da legenda e o das camadas cabem ao lado dos botões, e deslizam se faltar altura. */
+  .recolhivel__corpo {
+    width: min(var(--painel-ferramenta), calc(100vw - 112px));
+    overflow-y: auto;
+  }
+  /* Com a lista aberta o mapa tem 240 px de altura: o painel desliza dentro dele, em vez de ser cortado. Sem a lista o mapa é
+     alto e o painel mostra-se inteiro (a altura máxima fica a do resto: 70vh). */
+  .corpo:not(.corpo--sem-painel) .recolhivel__corpo {
+    max-height: 224px;
+  }
+  /* Com a lista aberta, os 3 indicadores passam para uma faixa baixa, no fundo do mapa, por baixo do zoom (o «Afastar»). */
+  .corpo:not(.corpo--sem-painel) .indicadores {
+    top: auto;
+    bottom: var(--space-4);
+  }
+  .corpo:not(.corpo--sem-painel) .indicadores .kpi {
+    gap: 0;
+    padding: var(--space-4) var(--space-8);
+  }
+  .corpo:not(.corpo--sem-painel) .indicadores .kpi__rotulo {
+    font: var(--type-seal);
+    line-height: 14px;
+  }
+  .corpo:not(.corpo--sem-painel) .indicadores .kpi__valor {
+    font: 600 20px/24px var(--font-sans);
+  }
+  /* Com a lista aberta, o mapa fica baixo e o «ⓘ» do cabeçalho da lista já tem as mesmas notas: o dos cartões sai. */
+  .corpo:not(.corpo--sem-painel) .indicadores__botao-info,
+  .corpo:not(.corpo--sem-painel) .indicadores__info {
+    display: none;
+  }
+}
+
+/* ── O cursor de hora mostra o ícone de sol, de crepúsculo ou de lua (ADR-0040) ── */
+.barra-hora__luz {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* ── O anel de excesso de velocidade (ADR-0039) na legenda, e a velocidade ao passar o rato num carro ── */
+.legenda__carro--excesso {
+  width: 6px;
+  height: 6px;
+  margin: 5px;
+  box-shadow: 0 0 0 1px var(--map-bg), 0 0 0 3px var(--speed-excess), 0 0 0 4px var(--map-bg);
+}
+/* A dica fica por cima dos marcadores (que têm z-index 1 e 2) e por baixo do pop-up preso a um sensor (5). */
+.dica-carro {
+  z-index: 4;
+}
+.dica-carro .maplibregl-popup-content {
+  padding: var(--space-4) var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: var(--type-small);
+}
+.dica-carro .maplibregl-popup-tip {
+  display: none;
+}
+
+/* ── O botão «3D», junto ao zoom (ADR-0037) ── */
+.ferramenta--3d {
+  font: var(--type-label);
+  font-weight: 700;
+}
+.ferramenta--3d[aria-pressed="true"] {
+  background: var(--accent-fill);
+  color: var(--text-on-accent);
+}
+
+
+/* A bússola (ADR-0042, ponto 4): por cima das camadas; a agulha roda com o mapa e aponta sempre para o norte. */
+.bussola__agulha {
+  display: grid;
+  place-items: center;
+  color: var(--state-error);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bussola__agulha {
+    transition: transform 80ms linear;
+  }
+}
+/* ════ A legenda só com o que está no mapa (ADR-0048, ponto 1) ════ */
+/* Peões 3D: uma figura (cabeça e corpo), na cor do texto. */
+.legenda__peao {
+  position: relative;
+  width: 8px;
+  height: 14px;
+}
+.legenda__peao::before,
+.legenda__peao::after {
+  position: absolute;
+  left: 50%;
+  background: var(--text-primary);
+  content: "";
+  transform: translateX(-50%);
+}
+.legenda__peao::before {
+  top: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.legenda__peao::after {
+  top: 6px;
+  width: 7px;
+  height: 8px;
+  border-radius: 3px 3px 1px 1px;
+}
+/* Edifícios: um bloco em relevo, com a face de cima mais clara (ADR-0037). */
+.legenda__edificio {
+  width: 14px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--map-building, var(--text-secondary));
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--bg-card) 45%, transparent);
+}
+.legenda__dia-noite {
+  display: inline-flex;
+  gap: 1px;
+  color: var(--text-secondary);
+}
+.legenda__dia-noite .icone {
+  width: 10px;
+  height: 10px;
+}
+/* Os mapas de calor (ADR-0047): a escala de pouco a muito. */
+.legenda__calor {
+  width: 18px;
+  height: 8px;
+  border-radius: 2px;
+}
+/* A mesma rampa do mapa (ADR-0047, ponto 5): de pouco para muito. */
+.legenda__calor--peoes,
+.legenda__calor--veiculos {
+  background: linear-gradient(90deg, rgb(49 54 149 / 0.35), #2b83ba, #00bec8, #66c250, #fadc3c, #f58228, #d72828);
+}
+.legenda__extremos--linha {
+  display: inline;
+  margin-left: var(--space-4);
+  font: var(--type-small);
+}
+
+/* ════ A lista das falhas do ① Vigiar (ADR-0048, ponto 5) ════
+   Nunca passa da altura da janela: no ecrã largo ocupa a coluna da direita (que já tem a altura da janela); abaixo de
+   980 px, onde a coluna vai por baixo do mapa e a página cresce, tem a altura da janela (no telemóvel, sem a barra da
+   hora, que está fixa no fundo). A lista ocupa o que sobra, e o JS conta as linhas de `--linha` que lá cabem. */
+.falhas {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-12);
+  min-height: 0;
+}
+.falhas .lista-falhas {
+  --linha: 56px;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.falhas .lista-falhas__linha {
+  flex-wrap: nowrap;
+  height: var(--linha);
+  padding-block: 0;
+}
+.falhas .lista-falhas__texto {
+  flex: 1 1 0;
+  overflow: hidden;
+}
+.falhas .lista-falhas__nome,
+.falhas .lista-falhas__detalhe {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Numa só linha, como texto: o tipo e o dia não quebram para uma 3.ª linha, que a altura fixa cortaria. */
+.falhas .lista-falhas__detalhe {
+  display: block;
+}
+.falhas .lista-falhas__tipo {
+  margin-left: var(--space-8);
+}
+.falhas__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+.falhas__filtro {
+  display: flex;
+  flex: 1 1 140px;
+  flex-direction: column;
+  gap: var(--space-4);
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.falhas__filtro select {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: var(--type-body);
+}
+.paginacao {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-4);
+  color: var(--text-secondary);
+  font: var(--type-small);
+  font-variant-numeric: tabular-nums;
+}
+.paginacao__posicao {
+  margin-right: auto;
+}
+.paginacao .botao-icone {
+  font: var(--type-h3);
+}
+.paginacao .botao-icone:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+@media (max-width: 979px) {
+  .falhas {
+    flex: none;
+    height: calc(100dvh - var(--space-32));
+  }
+}
+@media (max-width: 759px) {
+  .falhas {
+    height: calc(100dvh - var(--altura-barra-hora, 89px) - var(--space-32));
+  }
+}
+
+/* ════ O modo «Ao vivo» (ADR-0049) ════
+   O indicador diz «Ao vivo», com um ponto azul a pulsar: nem verde nem vermelho, que são estados (ponto 3). */
+.estado-dados--ao-vivo .estado-dados__ponto,
+.etiqueta-ao-vivo__ponto,
+.ao-vivo-entrada__ponto {
+  background: var(--accent-fill);
+}
+/* O ponto da etiqueta também pulsa: no telemóvel, o indicador do cabeçalho não está à vista. */
+.estado-dados--ao-vivo .estado-dados__ponto,
+.etiqueta-ao-vivo__ponto {
+  animation: pulso-ao-vivo 1.6s ease-in-out infinite;
+}
+@keyframes pulso-ao-vivo {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-fill) 60%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent-fill) 0%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .estado-dados--ao-vivo .estado-dados__ponto,
+  .etiqueta-ao-vivo__ponto {
+    animation: none;
+  }
+}
+.etiqueta-ao-vivo__ponto,
+.ao-vivo-entrada__ponto {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+}
+/* O botão na janela do indicador, com a nota por baixo (sem rede, o botão fica desligado e a nota diz porquê). */
+.ao-vivo-entrada {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-8) 0;
+}
+.ao-vivo-entrada .botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+}
+.ao-vivo-entrada .nota {
+  margin: 0;
+}
+/* A etiqueta sempre à vista (ponto 6): em cima, ao centro, em 2 linhas se for preciso. */
+.etiqueta-ao-vivo {
+  max-width: min(560px, calc(100% - 2 * 260px));
+  margin: 0;
+  border-color: var(--accent-fill);
+  white-space: normal;
+}
+/* A janela do modo (pontos 4 e 5), no lugar da barra da hora: a contagem, o último dado de cada estação e a saída. */
+.painel-ao-vivo {
+  right: var(--space-16);
+  bottom: var(--space-16);
+  left: var(--space-16);
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8) var(--space-16);
+  padding: var(--space-12) var(--space-16);
+}
+.painel-ao-vivo__resumo {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4) var(--space-12);
+  font: var(--type-body);
+}
+.painel-ao-vivo__nota {
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.painel-ao-vivo__estacoes summary {
+  min-height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font: var(--type-label);
+}
+/* A lista abre por cima da janela, sem a fazer crescer, e desliza se não couber. */
+.painel-ao-vivo__estacoes ul {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--space-8));
+  display: grid;
+  gap: var(--space-2);
+  min-width: 240px;
+  max-height: 50vh;
+  margin: 0;
+  padding: var(--space-8) var(--space-12);
+  overflow-y: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  list-style: none;
+  font: var(--type-small);
+  font-variant-numeric: tabular-nums;
+}
+.painel-ao-vivo__estacoes li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+.painel-ao-vivo__inativa {
+  color: var(--text-secondary);
+}
+/* Depois de sair sozinho: «Ligação perdida», por cima da barra da hora. */
+.aviso-ao-vivo {
+  right: var(--space-16);
+  bottom: calc(var(--altura-barra-hora, 86px) + var(--space-24));
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  max-width: 360px;
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-12);
+  border-color: var(--state-warn);
+  font: var(--type-label);
+}
+.legenda__carro--peao {
+  background: var(--accent-ink);
+}
+/* Entre 760 e 1179 px, a etiqueta ocupa a largura que sobra ao lado dos controlos do mapa. */
+@media (max-width: 1179px) {
+  .etiqueta-ao-vivo {
+    left: auto;
+    right: var(--space-16);
+    max-width: calc(100% - 200px);
+    transform: none;
+  }
+}
+/* No telemóvel o «chip-mapa» sai; a etiqueta fica, por baixo dos controlos, e a janela fica fixa em baixo, como a barra da hora. */
+@media (max-width: 759px) {
+  .chip-mapa.etiqueta-ao-vivo {
+    display: flex;
+    top: calc(var(--space-8) + var(--touch-min) + var(--space-8));
+    right: var(--space-8);
+    left: var(--space-8);
+    max-width: none;
+    font: var(--type-small);
+  }
+  .painel-ao-vivo {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-width: 1px 0 0;
+    border-radius: 0;
+    padding: var(--space-12) var(--space-16) 28px;
+    background: var(--bg-card);
+  }
+  .aviso-ao-vivo {
+    right: var(--space-8);
+    left: var(--space-8);
+    max-width: none;
+  }
+}
+
+/* ════ A pergunta por voz (ADR-0054) ════
+   O 🎙 nos controlos do mapa; a faixa por cima do mapa com o texto ouvido ao vivo, ou a caixa de texto, e as sugestões. */
+.botao-voz--a-ouvir {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  animation: voz-pulsa 1.2s ease-in-out infinite;
+}
+@keyframes voz-pulsa {
+  50% {
+    box-shadow: 0 0 0 6px var(--accent-soft);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .botao-voz--a-ouvir {
+    animation: none;
+    outline: 2px solid var(--accent-ink);
+  }
+}
+.faixa-voz {
+  position: absolute;
+  z-index: 5;
+  top: var(--space-16);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  width: min(560px, calc(100% - 2 * var(--space-16)));
+  padding: var(--space-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--raio-sobreposto);
+  background: var(--overlay);
+  box-shadow: var(--sombra-sobreposto);
+  backdrop-filter: blur(8px);
+  color: var(--text-primary);
+  transform: translateX(-50%);
+}
+.faixa-voz__linha {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+.faixa-voz__texto {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-8);
+  min-width: 0;
+  margin: 0;
+  font: var(--type-body);
+  color: var(--accent-ink);
+}
+.faixa-voz__texto span {
+  color: var(--text-primary);
+}
+.faixa-voz__form {
+  display: flex;
+  flex: 1;
+  gap: var(--space-8);
+  min-width: 0;
+}
+.faixa-voz__entrada {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--space-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  font: var(--type-body);
+}
+.faixa-voz__aviso,
+.faixa-voz__erro {
+  margin: 0;
+  font: var(--type-small);
+  color: var(--text-secondary);
+}
+.faixa-voz__erro {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.faixa-voz__chips {
+  display: flex;
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+}
+.chip-voz {
+  min-height: 36px;
+  padding: 0 var(--space-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  font: var(--type-small);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.chip-voz:hover {
+  border-color: var(--accent-ink);
+}
+@media (max-width: 759px) {
+  /* A 390 px: o alvo do polegar com ≥ 44 px, e a faixa sem scroll horizontal (os chips deslizam dentro dela). */
+  .botao-voz {
+    width: 44px;
+    height: 44px;
+  }
+  .faixa-voz {
+    top: var(--space-8);
+    width: calc(100% - 2 * var(--space-8));
+    padding: var(--space-8);
+  }
+  .chip-voz,
+  .faixa-voz__enviar {
+    min-height: 44px;
+  }
+}
+/* ════ Os 3 chips do ① Vigiar mais pequenos (ADR-0033, ponto 4) ════ */
+/* Os cartões eram muito grandes para o que mostram (130 px de altura). O nome numa linha, a 12 px; o número
+   a 22 px e a nota a 12 px, lado a lado; menos espaço interior. Cada cartão tem a largura do que diz, e nunca menos de 44 px
+   de altura (o alvo de toque). Os textos e os números não mudam. */
+.indicadores {
+  grid-template-columns: repeat(3, max-content);
+}
+.indicadores .kpi {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "rotulo rotulo"
+    "valor nota";
+  align-items: baseline;
+  column-gap: var(--space-8);
+  row-gap: 2px;
+  min-height: var(--touch-min);
+  padding: var(--space-8) var(--space-12);
+}
+.indicadores .kpi__rotulo {
+  grid-area: rotulo;
+  font: 500 12px/16px var(--font-sans);
+  white-space: nowrap;
+}
+.indicadores .kpi__valor {
+  grid-area: valor;
+  font: 600 22px/26px var(--font-sans);
+}
+.indicadores .kpi__nota {
+  grid-area: nota;
+  font: 400 12px/16px var(--font-sans);
+}
+/* O «ⓘ» fica a meio da altura nova dos cartões. */
+@media (min-width: 760px) {
+  .corpo--sem-painel .indicadores__botao-info {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .corpo:not(.corpo--sem-painel) .indicadores {
+    grid-template-columns: repeat(3, max-content) auto;
+  }
+  .corpo:not(.corpo--sem-painel) .indicadores__botao-info {
+    align-self: center;
+  }
+}
+/* No telemóvel, os 3 cartões repartem a largura pelo que dizem; a nota já não aparece (continua no nome acessível). */
+@media (max-width: 759px) {
+  .indicadores {
+    grid-template-columns: repeat(3, auto);
+  }
+}
+/* No telemóvel, os 3 nomes cabem numa linha a partir dos 375 px (a 390 px): menos espaço à volta, e não
+   letra mais pequena. Precisavam de 360 px e há 342; assim precisam de 324. Abaixo dos 375 px (360 px), o nome pode partir. */
+@media (max-width: 759px) {
+  .indicadores {
+    column-gap: var(--space-4);
+  }
+  .indicadores .kpi {
+    padding: var(--space-4);
+  }
+  .indicadores .kpi__rotulo--com-simbolo {
+    gap: var(--space-2);
+  }
+}
+@media (max-width: 374px) {
+  .indicadores .kpi__rotulo {
+    white-space: normal;
+  }
+}
+/* ════ «Ao vivo» arrumado (ADR-0055, ponto 1) ════ */
+/* Na legenda, o veículo parado é o mesmo ponto, mais discreto (como no mapa, a 0,4). */
+.legenda__carro--parado {
+  opacity: 0.4;
+}
+
+/* ════ «Ao vivo» na ② e na ③: a semana gravada à mesma hora (ADR-0055, ponto 4) ════ */
+/* O chip diz «semana gravada · <dia> às <hora>», com o contorno neutro (não é o ao vivo, que tem o azul). */
+.etiqueta-semana-gravada {
+  margin: 0;
+  border-color: var(--border-default);
+  white-space: nowrap;
+}
+/* No telemóvel o «chip-mapa» sai; este fica, no canto de cima, à direita da coluna dos botões do mapa (que na ② e na ③ tem as
+   Camadas e a Legenda: por baixo deles, tapavam o texto), e pode partir em 2 linhas. */
+@media (max-width: 759px) {
+  .chip-mapa.etiqueta-semana-gravada {
+    display: flex;
+    top: var(--space-8);
+    right: var(--space-8);
+    left: calc(var(--space-8) + var(--touch-min) + var(--space-8));
+    transform: none;
+    white-space: normal;
+    font: var(--type-small);
+  }
+}
+
+/* ── ④ O boletim da Câmara (ADR-0052): o botão discreto e a página para imprimir em PDF ─── */
+.boletim-botao {
+  align-self: flex-start;
+  text-decoration: none;
+}
+.boletim {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-24) var(--space-16);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: var(--type-body);
+}
+.boletim h1 {
+  margin: var(--space-4) 0 var(--space-12);
+  font: var(--type-h2);
+}
+.boletim h2 {
+  margin: 0 0 var(--space-8);
+  font: var(--type-h3);
+}
+.boletim__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin-bottom: var(--space-16);
+}
+.boletim__acoes a {
+  text-decoration: none;
+}
+.boletim__marca,
+.boletim__nota,
+.boletim__rodape {
+  margin: 0;
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.boletim__avisos {
+  margin: 0 0 var(--space-16);
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  list-style: none;
+  font: var(--type-body-strong);
+}
+.boletim__seccao {
+  margin-bottom: var(--space-16);
+}
+.boletim__seccao ul {
+  margin: 0;
+  padding-left: var(--space-16);
+}
+.boletim__seccao li + li {
+  margin-top: var(--space-4);
+}
+.boletim__tabela {
+  width: 100%;
+  margin-top: var(--space-8);
+  border-collapse: collapse;
+}
+.boletim__tabela th,
+.boletim__tabela td {
+  padding: var(--space-4) var(--space-8);
+  border-bottom: 1px solid var(--border-default);
+  text-align: left;
+  vertical-align: top;
+}
+.boletim__tabela thead th {
+  color: var(--text-secondary);
+  font: var(--type-small);
+}
+.boletim__rodape {
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--border-default);
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+  .boletim {
+    max-width: none;
+    padding: 0;
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+  .boletim__acoes {
+    display: none;
+  }
+  .boletim__tabela,
+  .boletim__seccao {
+    break-inside: avoid;
+  }
+}
+
+/* O batimento (ADR-0057): os dias descem para lhe dar lugar; os traços sem transparência (≥ 3:1 contra o fundo). Sem símbolos
+   no pico: o tipo também se lê na dica, no aria-label e na lista das falhas (WCAG 1.4.1). */
+.barra-hora--pulso .barra-hora__dias li {
+  top: 40px;
+}
+.barra-hora__pulso polyline.barra-hora__pulso-dispositivo {
+  stroke: var(--state-device);
+  stroke-width: 1.5;
+}
+/* ════ ADR-0054: a atribuição compacta, a caixa da pergunta maior e as caixas dos controlos com scroll ════ */
+/* A atribuição é obrigatória (ODbL, DGT): o controlo do MapLibre, aberto ao carregar e recolhido no ⓘ ao mexer no mapa. Fica
+   por cima da barra da hora, que mede a sua altura (--altura-barra-hora). Letra pequena, mas o texto em --text-primary (4,5:1). */
+.area-mapa .maplibregl-ctrl-bottom-right {
+  bottom: calc(var(--altura-barra-hora, 89px) + var(--space-8));
+}
+.area-mapa .maplibregl-ctrl-attrib {
+  margin: 0 var(--space-8) 0 0;
+  color: var(--text-primary);
+  font: 400 11px/16px var(--font-sans);
+  background: color-mix(in srgb, var(--bg-base) 72%, transparent);
+}
+.area-mapa .maplibregl-ctrl-attrib a {
+  color: var(--text-primary);
+}
+.area-mapa .maplibregl-ctrl-attrib.maplibregl-compact {
+  border-radius: var(--radius-md);
+}
+/* O ⓘ do MapLibre é um SVG preto: no tema escuro, inverte-se para se ver contra o fundo escuro. */
+[data-theme="dark"] .area-mapa .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+@media (max-width: 759px) {
+  /* O ⓘ com 44 × 44 px no telemóvel (alvo do polegar). */
+  .area-mapa .maplibregl-ctrl-attrib.maplibregl-compact {
+    min-height: 44px;
+    padding-right: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .area-mapa .maplibregl-ctrl-attrib-button {
+    width: 44px;
+    height: 44px;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  /* No estreito, a barra da hora é fixa no fundo do ecrã, fora do mapa: a atribuição fica no fundo do mapa. */
+  .area-mapa .maplibregl-ctrl-bottom-right {
+    bottom: var(--space-8);
+  }
+}
+/* A caixa da pergunta: mais larga e com letra de 18 px. A faixa da resposta fica como estava. */
+.faixa-voz--pergunta {
+  width: min(720px, calc(100% - 2 * var(--space-16)));
+}
+.faixa-voz--pergunta .faixa-voz__entrada {
+  min-height: 52px;
+  font: var(--type-h3);
+  font-weight: 400;
+}
+.faixa-voz__parar {
+  flex: none;
+}
+/* As caixas dos controlos nunca ficam cortadas: até ao fundo do ecrã, e o resto desliza (também pelo teclado: tabindex). */
+.recolhivel__corpo,
+.popover,
+.faixa-voz {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.recolhivel__corpo {
+  max-height: min(70vh, calc(100dvh - var(--altura-cabecalho, 64px) - var(--space-32)));
+}
+.popover {
+  max-height: calc(100dvh - var(--altura-cabecalho, 64px) - var(--space-16));
+}
+.faixa-voz {
+  max-height: calc(100dvh - var(--altura-cabecalho, 64px) - var(--space-32));
+}
+@media (max-width: 759px) {
+  /* A 390 px, a caixa fica no corredor entre a coluna dos controlos (à esquerda) e o zoom (à direita): não tapa nenhum, seja
+     qual for a altura. A pergunta ocupa a linha toda; «Perguntar» e o ✕ ficam por baixo. */
+  /* ponytail: 65 px e 73 px medidos a 390 px (coluna dos controlos e zoom do MapLibre); se estes mudarem, medir de novo. */
+  .faixa-voz--pergunta {
+    left: 65px;
+    right: 73px;
+    width: auto;
+    transform: none;
+  }
+  .faixa-voz--pergunta .faixa-voz__linha {
+    flex-wrap: wrap;
+  }
+  .faixa-voz--pergunta .faixa-voz__form {
+    display: contents;
+  }
+  .faixa-voz--pergunta .faixa-voz__entrada {
+    flex-basis: 100%;
+  }
+  .faixa-voz--pergunta .faixa-voz__enviar {
+    flex: 1;
+  }
+  /* As 3 sugestões de «Não percebi» partem-se em linhas: na caixa de 220 px, só se via a 1.ª, cortada. Uma sugestão
+     mais larga do que a caixa parte o texto dentro dela. */
+  .faixa-voz__chips {
+    flex-wrap: wrap;
+  }
+  .faixa-voz__chips .chip-voz {
+    max-width: 100%;
+    padding-block: var(--space-4);
+    white-space: normal;
+    text-align: left;
+  }
+  /* A barra da hora fica fixa no fundo do ecrã: a Legenda e as Camadas param acima dela, e chega-se à última linha. */
+  .recolhivel__corpo {
+    max-height: min(70vh, calc(100dvh - var(--altura-cabecalho, 64px) - var(--altura-barra-hora, 0px) - var(--space-32)));
+  }
+}
+
+/* ════ A legenda abre do lado direito do mapa, com o botão logo acima do «+» (ADR-0058) ════
+   A coluna vai do topo do mapa até 8 px acima do zoom (centrado na vertical), e o botão fica no fundo dela. A caixa abre à
+   esquerda da coluna, a partir do topo, e desce no máximo até à base do zoom: não tapa o zoom nem a atribuição, e o resto desliza. */
+.controlos-direita {
+  /* A altura do grupo do zoom: 3 botões no ecrã largo («+», «−», «3D»), mais os espaços, o padding e a borda. */
+  --altura-zoom: calc(3 * var(--ferramenta) + 4 * var(--space-4) + 2px);
+  position: absolute;
+  z-index: 4;
+  top: var(--space-16);
+  right: var(--space-16);
+  bottom: calc(50% + var(--altura-zoom) / 2 + var(--space-8));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+.controlos-direita .legenda {
+  position: static;
+  padding: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--raio-sobreposto);
+  background: var(--overlay);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 10px 28px rgb(0 0 0 / 0.35);
+  /* Sem backdrop-filter: criaria o bloco de contenção da caixa, que passaria a abrir presa ao botão e não ao topo da coluna. */
+  pointer-events: auto;
+}
+.controlos-direita .recolhivel__corpo {
+  top: 0;
+  right: calc(100% + var(--space-12));
+  left: auto;
+  /* Da altura da coluna mais o zoom: a caixa acaba na base do zoom. */
+  max-height: calc(100% + var(--space-8) + var(--altura-zoom));
+  overflow-y: auto;
+}
+@media (max-width: 759px) {
+  .controlos-direita {
+    /* No telemóvel o zoom só tem o «+» e o «−». */
+    --altura-zoom: calc(2 * var(--ferramenta) + 3 * var(--space-4) + 2px);
+    /* O mapa é baixo e os 3 cartões e o seu «ⓘ» ficam por cima do zoom: o botão sobe ao topo da coluna, à altura das Camadas,
+       e não tapa os cartões (que continuam com os nomes numa linha). */
+    top: var(--space-8);
+    justify-content: flex-start;
+  }
+  .controlos-direita .recolhivel__corpo {
+    /* ponytail: 180 px = as duas colunas de botões e os seus espaços, medidos a 390 px; se as colunas mudarem, medir de novo. */
+    width: min(var(--painel-ferramenta), calc(100vw - 180px));
+  }
+}
+
+/* ════ Abaixo dos 1400 px, o cabeçalho recolhe numa faixa fina (ADR-0059) ════
+   Entre 760 e 1399 px (os portáteis do júri), a faixa tem 44 px e mostra o separador ativo e o «Offline» (ADR-0048, ponto 3).
+   Expande com o rato por cima, com o foco do teclado ou com um toque (.barra-superior--expandida), por cima do mapa: o mapa não
+   salta. O Esc recolhe-o (.barra-superior--fechada). Abaixo dos 760 px fica o comportamento móvel; a partir dos 1400 px, tudo como estava. */
+@media (min-width: 760px) and (max-width: 1399px) {
+  .app {
+    grid-template-rows: var(--touch-min) minmax(0, 1fr);
+  }
+  .barra-superior {
+    align-self: start;
+    height: var(--touch-min);
+    overflow: hidden;
+  }
+  .barra-superior:is(:not(:hover, :focus-within, .barra-superior--expandida), .barra-superior--fechada) :is(.marca, .separador[aria-selected="false"], .botao-agora, .barra-superior__tema) {
+    display: none;
+  }
+  /* Recolhida, o separador ativo fica com 36 px, dentro da faixa: o alvo de 44 px é a faixa toda (o toque expande-a). */
+  .barra-superior:is(:not(:hover, :focus-within, .barra-superior--expandida), .barra-superior--fechada) .separador {
+    min-height: 36px;
+  }
+  .barra-superior:is(:hover, :focus-within, .barra-superior--expandida):not(.barra-superior--fechada) {
+    height: var(--topbar-height);
+    overflow: visible;
+    box-shadow: var(--sombra-sobreposto);
+  }
+}
+@media (min-width: 760px) and (max-width: 1399px) and (prefers-reduced-motion: no-preference) {
+  .barra-superior {
+    transition: height 150ms ease-out;
+  }
+}
